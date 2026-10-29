@@ -103,21 +103,23 @@ main.container { padding-top: 28px; padding-bottom: 56px; min-height: calc(100vh
   background: var(--nav-bg); backdrop-filter: saturate(180%) blur(16px); -webkit-backdrop-filter: saturate(180%) blur(16px);
   border-bottom: 1px solid var(--border);
 }
-.nav { display: flex; align-items: center; gap: 18px; min-height: 66px; flex-wrap: wrap; }
+.nav { display: flex; align-items: center; gap: 14px; min-height: 66px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 800; font-size: 1.12rem; letter-spacing: -.02em; }
 .brand:hover { color: var(--text); }
 .brand small { display: block; font-weight: 500; font-size: .7rem; color: var(--muted); letter-spacing: 0; margin-top: -3px; }
 .nav-links { display: flex; gap: 2px; flex: 1; flex-wrap: nowrap; white-space: nowrap; min-width: 0; }
 .nav-links a {
-  position: relative; color: var(--muted); padding: 8px 12px; border-radius: 10px; font-weight: 600; font-size: .9rem;
+  position: relative; color: var(--muted); padding: 8px 10px; border-radius: 10px; font-weight: 600; font-size: .9rem;
   transition: color .2s, background .2s;
 }
 .nav-links a:hover { color: var(--text); background: var(--primary-soft); }
 .nav-links a.active { color: var(--primary); background: var(--primary-soft); }
 .nav-links a.active::after {
-  content: ""; position: absolute; left: 14px; right: 14px; bottom: 3px; height: 2px; border-radius: 2px; background: var(--grad);
+  content: ""; position: absolute; left: 10px; right: 10px; bottom: 3px; height: 2px; border-radius: 2px; background: var(--grad);
 }
-.nav-user { display: flex; gap: 10px; align-items: center; }
+.nav-user { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+/* Рөл шапкада орын алмасын: ол аватардың кеңесінде және профильде көрсетіледі */
+.user-chip .badge { display: none; }
 .user-chip {
   display: flex; align-items: center; gap: 8px; color: var(--text); font-weight: 600; font-size: .9rem;
   padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
@@ -766,12 +768,7 @@ footer .brand-mini { display: flex; align-items: center; gap: 8px; font-weight: 
 /* =========================================================
    Responsive
    ========================================================= */
-@media (max-width: 1360px) {
-  .user-chip .badge { display: none; }
-  .nav { gap: 14px; }
-  .nav-links a { padding: 8px 10px; }
-}
-@media (max-width: 1120px) {
+@media (max-width: 1199px) {
   .nav-burger { display: grid; place-items: center; margin-left: auto; font-size: 1.4rem; cursor: pointer; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); }
   .nav-links, .nav-user { display: none; width: 100%; }
   .nav-toggle:checked ~ .nav-links, .nav-toggle:checked ~ .nav-user { display: flex; flex-direction: column; align-items: stretch; padding-bottom: 14px; }
