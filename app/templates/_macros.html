@@ -85,3 +85,60 @@
     </svg>
   </div>
 {% endmacro %}
+
+{# Кең экрандағы бүйір өрістердің анимацияланған «метеостанциясы» (тек декорация) #}
+{% macro ambient() %}
+  <div class="ambient" aria-hidden="true">
+    {% for side in ('left', 'right') %}
+      <div class="ambient-side {{ side }}">
+        <div class="amb-stars"></div>
+        {% for i in range(3) %}
+          <div class="amb-cloud" style="--top:{{ [12, 38, 64][i] }}%;--w:{{ [150, 110, 180][i] }}px;--t:{{ [26, 34, 30][i] }}s;--d:{{ -i * 7 - (5 if side == 'right' else 0) }}s"><span class="cloud"></span></div>
+        {% endfor %}
+        <div class="amb-fall">
+          {% for i in range(16) %}
+            {% set n = i + (7 if side == 'right' else 0) %}
+            <i style="left:{{ (n * 37) % 100 }}%;--dur:{{ 4 + (n * 13 % 40) / 10 }}s;--delay:-{{ (n * 7 % 50) / 10 }}s;--sz:{{ 0.7 + (n * 3 % 7) / 10 }}"></i>
+          {% endfor %}
+        </div>
+        {% if side == 'left' %}
+          <div class="amb-orb"></div>
+          <svg class="amb-thermo" viewBox="0 0 80 240">
+            <defs>
+              <linearGradient id="mercuryGrad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#ff7a59"/><stop offset="1" stop-color="#e5484d"/>
+              </linearGradient>
+            </defs>
+            <rect class="glass" x="26" y="8" width="28" height="190" rx="14"/>
+            {% for k in range(9) %}
+              <line class="tick" x1="58" x2="{{ 70 if k % 2 == 0 else 65 }}" y1="{{ 30 + k * 18 }}" y2="{{ 30 + k * 18 }}"/>
+            {% endfor %}
+            <rect class="mercury" x="34" y="24" width="12" height="176" rx="6" fill="url(#mercuryGrad)"/>
+            <circle class="bulb-glass" cx="40" cy="206" r="26"/>
+            <circle class="bulb" cx="40" cy="206" r="19" fill="url(#mercuryGrad)"/>
+            <circle class="shine" cx="33" cy="199" r="5"/>
+          </svg>
+        {% else %}
+          <div class="amb-gusts"><i></i><i></i><i></i><i></i></div>
+          <svg class="amb-anemo" viewBox="0 0 220 300">
+            <line class="pole" x1="110" y1="112" x2="110" y2="300"/>
+            <g class="vane">
+              <line x1="70" y1="168" x2="150" y2="168"/>
+              <path d="M150 168 l-16 -9 v18 z"/>
+              <path d="M70 168 l-14 -14 h10 l12 14 l-12 14 h-10 z"/>
+            </g>
+            <g class="rotor">
+              {% for a in (0, 120, 240) %}
+                <g transform="rotate({{ a }} 110 100)">
+                  <line x1="110" y1="100" x2="110" y2="38"/>
+                  <path class="cup" d="M96 38 a14 14 0 0 0 28 0 z"/>
+                </g>
+              {% endfor %}
+            </g>
+            <circle class="hub" cx="110" cy="100" r="9"/>
+          </svg>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}

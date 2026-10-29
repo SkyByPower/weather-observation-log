@@ -20,7 +20,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-{% from "_macros.html" import wx %}
+{% from "_macros.html" import wx, ambient %}
+{{ ambient() }}
 <header class="topbar">
   <div class="container nav">
     <a class="brand" href="{{ url_for('main.index') }}">
