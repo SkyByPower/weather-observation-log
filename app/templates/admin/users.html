@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination as paginate, delete_button %}
+{% block title %}Пайдаланушылар{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Пайдаланушылар</h1>
+    <p class="muted">Рөлдерді басқару (admin / user) және аккаунттарды өшіру.</p>
+  </div>
+</div>
+
+<form class="card filters" method="get" style="margin-bottom:20px">
+  <div class="field wide">
+    <label for="q">Іздеу</label>
+    <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Аты немесе email…">
+  </div>
+  <div class="field">
+    <label for="role">Рөл</label>
+    <select id="role" name="role">
+      <option value="">Барлығы</option>
+      {% for r in roles %}<option value="{{ r }}" {{ 'selected' if r == filters.role }}>{{ r }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="btns">
+    <button class="btn btn-primary" type="submit">Іздеу</button>
+    <a class="btn btn-ghost" href="{{ url_for('admin.users') }}">Тазалау</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="table-wrap"><table>
+    <thead><tr><th>Пайдаланушы</th><th>Email</th><th>Тіркелген</th><th class="num">Бақылаулар</th><th>Рөл</th><th></th></tr></thead>
+    <tbody>
+    {% for u in pagination.items %}
+      <tr>
+        <td><b>{{ u.username }}</b>{% if u.id == current_user.id %} <span class="muted small">(сіз)</span>{% endif %}</td>
+        <td>{{ u.email }}</td>
+        <td class="nowrap">{{ u.created_at|dt('%d.%m.%Y') }}</td>
+        <td class="num">{{ counts.get(u.id, 0) }}</td>
+        <td>
+          {% if u.id == current_user.id %}
+            <span class="badge role-{{ u.role }}">{{ u.role }}</span>
+          {% else %}
+            <form method="post" action="{{ url_for('admin.change_role', user_id=u.id) }}" class="inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="role" onchange="this.form.submit()" style="width:auto;padding:4px 8px">
+                {% for r in roles %}<option value="{{ r }}" {{ 'selected' if r == u.role }}>{{ r }}</option>{% endfor %}
+              </select>
+              <noscript><button class="btn btn-ghost btn-sm">OK</button></noscript>
+            </form>
+          {% endif %}
+        </td>
+        <td class="right">
+          {% if u.id != current_user.id %}
+            {{ delete_button(url_for('admin.delete_user', user_id=u.id), 'Пайдаланушы өшіріледі (бақылаулары сақталады). Сенімдісіз бе?') }}
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="empty">Пайдаланушы табылмады.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {{ paginate(pagination, 'пайдаланушы') }}
+</section>
+{% endblock %}

@@ -1,0 +1,223 @@
+# ⛅ Weather Observation Log — Ауа райы бақылау журналы
+
+Метеостанциялардың бақылау деректерін (температура, ылғалдылық, қысым, жел, жауын-шашын) тіркеуге,
+күн бойынша сүзуге және орташа мәндерді есептеуге арналған Flask веб-қосымшасы.
+
+![Басты бет](docs/screenshots/01-home.png)
+
+## Мазмұны
+- [Технологиялар](#технологиялар)
+- [Талаптардың орындалуы](#талаптардың-орындалуы)
+- [Жоба құрылымы](#жоба-құрылымы)
+- [Орнату және іске қосу](#орнату-және-іске-қосу)
+- [Дерекқор: инициализация және миграция](#дерекқор-инициализация-және-миграция)
+- [Тест аккаунттар](#тест-аккаунттар)
+- [API](#api)
+- [Тесттер](#тесттер)
+- [Скриншоттар](#скриншоттар)
+
+## Технологиялар
+- Python 3.10+ (3.12-де тексерілген), Flask 3
+- Flask-SQLAlchemy (SQLAlchemy ORM), SQLite (әдепкі) немесе PostgreSQL
+- Flask-Login — сессия арқылы кіру/шығу
+- Flask-WTF / WTForms — формалар, валидация, CSRF қорғанысы
+- Jinja2 шаблондары, өз CSS (сыртқы CDN жоқ — интернетсіз де жұмыс істейді)
+- pytest — автоматты тесттер
+
+## Талаптардың орындалуы
+
+| № | Талап | Қалай орындалған |
+|---|-------|------------------|
+| 1 | Тіркелу / кіру / шығу | `auth` blueprint, Flask-Login, құпиясөз `werkzeug` hash-пен сақталады, шығу — POST + CSRF |
+| 2 | Екі рөл: admin, user | `admin` — станциялар, параметрлер, пайдаланушылар және барлық бақылауларды басқарады; `user` — бақылау қосады, тек өз жазбаларын өңдейді/өшіреді |
+| 3 | ≥3 модель, байланыстар | `User`, `Station`, `Parameter`, `Observation`. **1–көп:** Station→Observation, Parameter→Observation, User→Observation. **Көп–көп:** Station↔Parameter (`station_parameters` кестесі — станция қандай параметрлерді өлшейді) |
+| 4 | Толық CRUD | Бақылаулар (негізгі бөлім), станциялар, параметрлер — қосу/көру/өңдеу/өшіру |
+| 5 | Іздеу, сүзгі, сорттау | Бақылаулар бетінде: мәтін бойынша іздеу, станция/параметр/**күн аралығы** бойынша сүзгі, 5 түрлі сорттау. Станциялар және пайдаланушылар беттерінде де іздеу/сүзгі бар |
+| 6 | Пагинация | Бақылаулар (15/бет), станциялар (6/бет), пайдаланушылар (10/бет), API (`page`, `per_page`) |
+| 7 | Форма валидациясы | Міндетті өрістер, ұзындық, сан диапазоны (ендік −90…90, бойлық −180…180, мән параметрдің min/max аралығында), email, телефон (regex), болашақ уақытқа тыйым, бірегейлік, құпиясөз сәйкестігі |
+| 8 | Файл жүктеу | Станция фотосы (PNG/JPG/GIF/WEBP) және бақылау тіркемесі (PDF/PNG/JPG/CSV/TXT): `secure_filename` + UUID атау, кеңейтім тексеру, **файл қолтаңбасын (magic bytes) тексеру**, 5 МБ шектеу (413 беті) |
+| 9 | 404 / 500 беттері | `templates/errors/404.html`, `500.html`, сондай-ақ 403/413/400 үшін ортақ бет. `/api/...` үшін қателер JSON түрінде |
+| 10 | API (≥3 endpoint) | 9 endpoint: GET/POST/PUT/DELETE — төменде қараңыз |
+| 11 | README | Осы файл |
+| ★ | Күн бойынша сүзгі, орташа мән | «Орташа мәндер» беті: кезең + станция бойынша әр параметрдің орташа/мин/макс мәні, күндік орташа мәндердің SVG графигі, станцияларды салыстыру. Бақылаулар тізімінде бір параметр таңдалса — сүзілген деректердің орташа мәні шығады |
+
+## Жоба құрылымы
+
+```
+├── app/
+│   ├── __init__.py          # create_app(), кеңейтімдер, қате өңдегіштер
+│   ├── models.py            # User, Station, Parameter, Observation (+ station_parameters)
+│   ├── forms.py             # WTForms формалары және валидация
+│   ├── services.py          # күн бойынша сүзгі, орташа мәндер, график есебі
+│   ├── utils.py             # admin_required, қауіпсіз файл жүктеу
+│   ├── commands.py          # flask init-db / seed / create-admin
+│   ├── seed.py              # демо деректер
+│   ├── auth/routes.py       # тіркелу, кіру, шығу, профиль
+│   ├── main/routes.py       # басты бет, орташа мәндер
+│   ├── stations/routes.py   # станциялар CRUD
+│   ├── observations/routes.py  # бақылаулар CRUD + іздеу/сүзгі/пагинация
+│   ├── admin/routes.py      # пайдаланушылар және параметрлер
+│   ├── api/routes.py        # JSON API
+│   ├── templates/           # Jinja2 шаблондары (errors/ — 404, 500)
+│   └── static/              # css/, img/, uploads/
+├── tests/                   # pytest тесттері
+├── docs/screenshots/        # README скриншоттары
+├── config.py                # Config және TestingConfig
+├── run.py                   # кіру нүктесі
+├── requirements.txt
+├── .env.example             # .env үлгісі (нақты .env git-ке салынбайды)
+├── .flaskenv                # FLASK_APP=run.py
+└── .gitignore
+```
+
+## Орнату және іске қосу
+
+### 1. Репозиторийді жүктеу
+```bash
+git clone https://github.com/<username>/weather-observation-log.git
+cd weather-observation-log
+```
+
+### 2. Виртуалды орта және тәуелділіктер
+Windows (PowerShell):
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+Linux / macOS:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 3. `.env` файлы
+```bash
+cp .env.example .env        # Windows: copy .env.example .env
+```
+`.env` ішінде `SECRET_KEY` мәнін кездейсоқ ұзын жолға ауыстырыңыз:
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+### 4. Дерекқорды дайындау (демо деректермен)
+```bash
+flask seed
+```
+
+### 5. Іске қосу
+```bash
+flask run
+```
+Браузерде ашыңыз: <http://127.0.0.1:5000>
+
+## Дерекқор: инициализация және миграция
+
+| Команда | Не істейді |
+|---------|-----------|
+| `flask init-db` | Барлық кестелерді жасайды (бар деректерге тимейді) |
+| `flask init-db --drop` | Кестелерді өшіріп, қайта жасайды (бос дерекқор) |
+| `flask seed` | Дерекқорды қайта жасап, демо деректермен толтырады: 3 пайдаланушы, 7 станция, 5 параметр, соңғы 30 күндегі ~2800 бақылау |
+| `flask seed --days 60` | 60 күндік демо деректер |
+| `flask create-admin` | Жаңа admin аккаунтын интерактивті түрде жасайды |
+
+SQLite файлы `instance/weather.db` ішінде жасалады.
+
+**PostgreSQL** қолдану үшін:
+```bash
+pip install "psycopg[binary]"
+```
+және `.env` ішінде:
+```
+DATABASE_URL=postgresql+psycopg://user:password@localhost:5432/weather
+```
+содан кейін `flask seed` (немесе `flask init-db`).
+
+## Тест аккаунттар
+
+`flask seed` командасынан кейін:
+
+| Рөл | Логин | Құпиясөз |
+|-----|-------|----------|
+| admin | `admin` | `admin123` |
+| user | `user` | `user123` |
+| user | `aigerim` | `aigerim123` |
+
+> Бұл — тек демо/тест аккаунттар. Нақты серверде `flask create-admin` арқылы жаңа әкімші жасап, демо аккаунттарды өшіріңіз.
+
+## API
+
+Барлық жауаптар JSON форматында. **GET сұраныстары ашық**, ал POST/PUT/DELETE үшін `X-API-Key` тақырыбы керек.
+API кілтін сайтқа кіріп, **Профиль** бетінен көшіріп алыңыз.
+
+| Әдіс | Endpoint | Сипаттама |
+|------|----------|-----------|
+| GET | `/api/` | Endpoint-тер тізімі |
+| GET | `/api/stations` | Станциялар (`?q=`, `?city=`) |
+| GET | `/api/stations/<id>` | Бір станция + оның параметрлері |
+| GET | `/api/parameters` | Параметрлер тізімі |
+| GET | `/api/observations` | Бақылаулар: `station_id`, `parameter` (id немесе code), `date_from`, `date_to` (YYYY-MM-DD), `page`, `per_page` (≤100) |
+| GET | `/api/observations/<id>` | Бір бақылау |
+| POST | `/api/observations` | Жаңа бақылау қосу |
+| PUT | `/api/observations/<id>` | Бақылауды өзгерту (тек автор немесе admin; тек жіберілген өрістер өзгереді) |
+| DELETE | `/api/observations/<id>` | Бақылауды өшіру (тек автор немесе admin) |
+| GET | `/api/stats/averages` | Орташа мәндер: `station_id`, `date_from`, `date_to`; `parameter=temperature` берілсе — күндік орташа мәндер де |
+
+### Мысалдар
+```bash
+# Алматы станциясының 1–7 қазандағы температура бақылаулары
+curl "http://127.0.0.1:5000/api/observations?station_id=1&parameter=temperature&date_from=2026-10-01&date_to=2026-10-07"
+
+# Орташа мәндер
+curl "http://127.0.0.1:5000/api/stats/averages?station_id=1&parameter=temperature"
+
+# Жаңа бақылау (201 Created)
+curl -X POST http://127.0.0.1:5000/api/observations \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: <СІЗДІҢ_КІЛТІҢІЗ>" \
+  -d '{"station_id": 1, "parameter": "temperature", "value": 7.4, "observed_at": "2026-10-30T09:00", "note": "Бұлтты"}'
+
+# Өзгерту
+curl -X PUT http://127.0.0.1:5000/api/observations/1 \
+  -H "Content-Type: application/json" -H "X-API-Key: <КІЛТ>" -d '{"value": 8.1}'
+
+# Өшіру
+curl -X DELETE http://127.0.0.1:5000/api/observations/1 -H "X-API-Key: <КІЛТ>"
+```
+
+Қате жауап мысалы (422):
+```json
+{
+  "error": "Деректер қате.",
+  "status": 422,
+  "details": { "value": "Температура мәні -60…60 °C аралығында болуы керек." }
+}
+```
+
+Статус кодтары: `200` OK, `201` Created, `400` қате JSON, `401` кілт жоқ, `403` рұқсат жоқ, `404` табылмады, `422` валидация қатесі.
+
+## Тесттер
+
+```bash
+pytest -q
+```
+22 тест: тіркелу/кіру, рөлдер, CRUD, валидация, файл жүктеу (рұқсат етілмеген кеңейтім және жалған сурет),
+іздеу/сүзгі/пагинация, орташа мәндер, 404/500 беттері және API (GET/POST/PUT/DELETE, кілт, рұқсаттар).
+
+## Қауіпсіздік
+- Құпиясөздер `generate_password_hash` арқылы хэштеледі
+- Барлық формаларда CSRF токені (Flask-WTF); өшіру және шығу әрекеттері тек POST арқылы
+- `SECRET_KEY`, `DATABASE_URL` — `.env` файлында, ол `.gitignore`-да
+- Жүктелген файлдар: `secure_filename`, UUID атау, кеңейтім + мазмұн қолтаңбасын тексеру, көлем шектеуі
+- Кіруден кейінгі `next` бағыттауы тек өз сайтқа рұқсат етіледі (open redirect-тен қорғау)
+
+## Скриншоттар
+
+| | |
+|---|---|
+| **Кіру** ![Кіру](docs/screenshots/02-login.png) | **Станциялар (іздеу, сүзгі, сорттау)** ![Станциялар](docs/screenshots/03-stations.png) |
+| **Станция беті — 7 күндік орташа мәндер** ![Станция](docs/screenshots/04-station-detail.png) | **Бақылаулар — сүзгі, орташа мән, пагинация** ![Бақылаулар](docs/screenshots/05-observations.png) |
+| **Орташа мәндер және график** ![Статистика](docs/screenshots/06-stats.png) | **Форма валидациясы** ![Валидация](docs/screenshots/07-validation.png) |
+| **Admin: пайдаланушылар мен рөлдер** ![Пайдаланушылар](docs/screenshots/08-admin-users.png) | **Admin: параметрлер** ![Параметрлер](docs/screenshots/09-parameters.png) |
+| **404 беті** ![404](docs/screenshots/10-404.png) | **API JSON жауабы** ![API](docs/screenshots/11-api.png) |

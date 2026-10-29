@@ -1,0 +1,40 @@
+{% macro field(f, help=None) %}
+  <div class="field {{ 'has-error' if f.errors }}">
+    {% if f.type == 'BooleanField' %}
+      <label class="check">{{ f(**kwargs) }} {{ f.label.text }}</label>
+    {% else %}
+      <label for="{{ f.id }}">{{ f.label.text }}{% if f.flags.required %}<span class="req">*</span>{% endif %}</label>
+      {{ f(**kwargs) }}
+    {% endif %}
+    {% if help %}<div class="field-help">{{ help }}</div>{% endif %}
+    {% for error in f.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro pagination(p, noun='жазба') %}
+  {% if p.pages > 1 %}
+    <nav class="pagination" aria-label="Беттеу">
+      {% if p.has_prev %}<a href="{{ url_with_args(page=p.prev_num) }}">‹ Алдыңғы</a>
+      {% else %}<span class="disabled">‹ Алдыңғы</span>{% endif %}
+      {% for n in p.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+        {% if n is none %}<span class="gap">…</span>
+        {% elif n == p.page %}<span class="current">{{ n }}</span>
+        {% else %}<a href="{{ url_with_args(page=n) }}">{{ n }}</a>{% endif %}
+      {% endfor %}
+      {% if p.has_next %}<a href="{{ url_with_args(page=p.next_num) }}">Келесі ›</a>
+      {% else %}<span class="disabled">Келесі ›</span>{% endif %}
+    </nav>
+  {% endif %}
+  {% if p.total %}
+    <p class="muted small page-info">Барлығы {{ p.total }} {{ noun }} · {{ p.first }}–{{ p.last }} көрсетілген · {{ p.page }}/{{ p.pages }} бет</p>
+  {% endif %}
+{% endmacro %}
+
+{% macro delete_button(action, confirm_text, label='Өшіру', cls='btn-link danger') %}
+  <form method="post" action="{{ action }}" class="inline" onsubmit="return confirm('{{ confirm_text }}');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="{{ cls }}">{{ label }}</button>
+  </form>
+{% endmacro %}
+
+{% macro obs_value(o) %}<b>{{ o.value|num }}</b> <span class="muted">{{ o.parameter.unit }}</span>{% endmacro %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ 'Бақылауды өңдеу' if obs else 'Жаңа бақылау' }}{% endblock %}
+{% block content %}
+<div class="card form-card">
+  <p class="small">
+    {% if obs %}<a href="{{ url_for('observations.detail', observation_id=obs.id) }}">← Бақылау #{{ obs.id }}</a>
+    {% else %}<a href="{{ url_for('observations.list_observations') }}">← Бақылаулар</a>{% endif %}
+  </p>
+  <h1>{{ 'Бақылауды өңдеу' if obs else 'Жаңа бақылау' }}</h1>
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      {{ field(form.station_id) }}
+      {{ field(form.parameter_id) }}
+    </div>
+    <div class="form-row">
+      {{ field(form.value, placeholder="мыс. 12.5", inputmode="decimal", help="Мән параметрдің рұқсат етілген диапазонында болуы керек.") }}
+      {{ field(form.observed_at, max=form.observed_at_max) }}
+    </div>
+    {{ field(form.note, rows=3, placeholder="Бұлтты, жеңіл жаңбыр…") }}
+    {% if obs and obs.attachment %}
+      <p class="small muted">Қазіргі тіркеме: <a href="{{ url_for('static', filename='uploads/' ~ obs.attachment) }}" target="_blank">ашу</a>. Жаңасын жүктесеңіз, ауыстырылады.</p>
+    {% endif %}
+    {{ field(form.attachment_file, accept=".pdf,.png,.jpg,.jpeg,.csv,.txt") }}
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Сақтау</button>
+      <a class="btn btn-ghost" href="{{ url_for('observations.detail', observation_id=obs.id) if obs else url_for('observations.list_observations') }}">Болдырмау</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

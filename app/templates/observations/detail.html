@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import delete_button %}
+{% block title %}Бақылау #{{ obs.id }}{% endblock %}
+{% block content %}
+<div class="card form-card">
+  <p class="small"><a href="{{ url_for('observations.list_observations') }}">← Бақылаулар</a></p>
+  <div class="card-title">
+    <h1 style="margin:0">Бақылау #{{ obs.id }}</h1>
+    {% if obs.can_edit(current_user) %}
+      <div class="actions">
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('observations.edit', observation_id=obs.id) }}">✏️ Өңдеу</a>
+        {{ delete_button(url_for('observations.delete', observation_id=obs.id), 'Бұл бақылауды өшіресіз бе?', '🗑 Өшіру', 'btn btn-danger btn-sm') }}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="tile avg-tile" style="margin-bottom:18px">
+    <div class="tile-label">{{ obs.parameter.name }}</div>
+    <div class="tile-value">{{ obs.value|num }} <span class="unit">{{ obs.parameter.unit }}</span></div>
+    <div class="tile-sub">рұқсат етілген диапазон: {{ obs.parameter.min_value|num(0) }}…{{ obs.parameter.max_value|num(0) }} {{ obs.parameter.unit }}</div>
+  </div>
+
+  <dl class="props">
+    <dt>Станция</dt><dd><a href="{{ url_for('stations.detail', station_id=obs.station_id) }}">{{ obs.station.name }}</a> <span class="muted mono">{{ obs.station.code }}</span></dd>
+    <dt>Бақылау уақыты</dt><dd>{{ obs.observed_at|dt }}</dd>
+    <dt>Ескертпе</dt><dd>{{ obs.note or '—' }}</dd>
+    <dt>Тіркеме</dt>
+    <dd>{% if obs.attachment %}<a href="{{ url_for('static', filename='uploads/' ~ obs.attachment) }}" target="_blank" rel="noopener">📎 Файлды ашу</a>{% else %}—{% endif %}</dd>
+    <dt>Автор</dt><dd>{{ obs.author.username if obs.author else '—' }}</dd>
+    <dt>Жасалған</dt><dd>{{ obs.created_at|dt }}</dd>
+    {% if obs.updated_at and obs.updated_at != obs.created_at %}<dt>Өзгертілген</dt><dd>{{ obs.updated_at|dt }}</dd>{% endif %}
+  </dl>
+  <p class="small muted" style="margin-top:18px">JSON: <a class="mono" href="{{ url_for('api.get_observation', observation_id=obs.id) }}">/api/observations/{{ obs.id }}</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Орташа мәндер{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Орташа мәндер</h1>
+    <p class="muted">Күн аралығы мен станцияны таңдап, параметрлердің орташа, ең кіші және ең үлкен мәндерін есептеңіз.</p>
+  </div>
+</div>
+
+<form class="card filters" method="get" style="margin-bottom:20px">
+  <div class="field">
+    <label for="station_id">Станция</label>
+    <select id="station_id" name="station_id">
+      <option value="">Барлық станция</option>
+      {% for s in stations %}<option value="{{ s.id }}" {{ 'selected' if station and s.id == station.id }}>{{ s.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="parameter_id">График параметрі</label>
+    <select id="parameter_id" name="parameter_id">
+      {% for p in parameters %}<option value="{{ p.id }}" {{ 'selected' if parameter and p.id == parameter.id }}>{{ p.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="date_from">Күннен</label>
+    <input type="date" id="date_from" name="date_from" value="{{ date_from or '' }}">
+  </div>
+  <div class="field">
+    <label for="date_to">Күнге дейін</label>
+    <input type="date" id="date_to" name="date_to" value="{{ date_to or '' }}">
+  </div>
+  <div class="btns">
+    <button class="btn btn-primary" type="submit">Есептеу</button>
+    <a class="btn btn-ghost" href="{{ url_for('main.stats') }}">Тазалау</a>
+  </div>
+</form>
+
+<p class="muted small" style="margin:-6px 0 16px">
+  Кезең: <b>{{ date_from.strftime('%d.%m.%Y') if date_from else 'басынан' }}</b> — <b>{{ date_to.strftime('%d.%m.%Y') if date_to else 'бүгінге дейін' }}</b>
+  · Станция: <b>{{ station.name if station else 'барлығы' }}</b>
+  · <a href="{{ url_for('api.averages', station_id=station.id if station else None, date_from=date_from, date_to=date_to, parameter=parameter.code if parameter else None) }}">JSON</a>
+</p>
+
+{% if summary %}
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:20px">
+  {% for a in summary %}
+    <a class="tile avg-tile" href="{{ url_with_args(parameter_id=a.id) }}" style="text-decoration:none;color:inherit;{{ 'outline:2px solid var(--primary)' if parameter and a.id == parameter.id }}">
+      <div class="tile-label">{{ a.name }}</div>
+      <div class="tile-value">{{ a.avg|num }} <span class="unit">{{ a.unit }}</span></div>
+      <div class="tile-sub">мин {{ a.min|num }} · макс {{ a.max|num }} · {{ a.count }} өлшем</div>
+    </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid grid-main">
+  <section class="card">
+    <h2>{{ parameter.name if parameter else '' }} — күндік орташа мән{% if parameter %} <span class="muted small">({{ parameter.unit }})</span>{% endif %}</h2>
+    {% if chart %}
+      <svg class="chart" viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-label="Күндік орташа мәндер графигі">
+        {% for t in chart.ticks %}
+          <line class="grid-line" x1="{{ chart.pad_x }}" x2="{{ chart.width - chart.pad_x }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
+          <text class="axis-label" x="{{ chart.pad_x - 8 }}" y="{{ t.y + 4 }}" text-anchor="end">{{ t.value|num }}</text>
+        {% endfor %}
+        <polygon class="area" points="{{ chart.area }}"/>
+        <polyline class="line" points="{{ chart.polyline }}"/>
+        {% for p in chart.points %}
+          <circle class="dot" cx="{{ p.x }}" cy="{{ p.y }}" r="4"><title>{{ p.date.strftime('%d.%m.%Y') }}: {{ p.avg|num(2) }} (мин {{ p.min|num }}, макс {{ p.max|num }})</title></circle>
+          {% if loop.index0 % chart.label_every == 0 or loop.last %}
+            <text class="axis-label" x="{{ p.x }}" y="{{ chart.height - 8 }}" text-anchor="middle">{{ p.date.strftime('%d.%m') }}</text>
+          {% endif %}
+        {% endfor %}
+      </svg>
+    {% else %}
+      <div class="empty">Таңдалған кезеңде дерек жоқ.</div>
+    {% endif %}
+
+    {% if daily %}
+    <details style="margin-top:12px">
+      <summary class="small">Күндер бойынша кесте ({{ daily|length }} күн)</summary>
+      <div class="table-wrap" style="margin-top:10px"><table>
+        <thead><tr><th>Күні</th><th class="num">Орташа</th><th class="num">Мин</th><th class="num">Макс</th><th class="num">Саны</th></tr></thead>
+        <tbody>
+        {% for d in daily|reverse %}
+          <tr>
+            <td><a href="{{ url_for('observations.list_observations', parameter_id=parameter.id, station_id=station.id if station else None, date_from=d.date, date_to=d.date) }}">{{ d.date.strftime('%d.%m.%Y') }}</a></td>
+            <td class="num"><b>{{ d.avg|num(2) }}</b></td><td class="num">{{ d.min|num }}</td><td class="num">{{ d.max|num }}</td><td class="num">{{ d.count }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+    </details>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Станциялар салыстыруы</h2>
+    <p class="muted small">{{ parameter.name if parameter else '' }} — кезеңдегі орташа мән</p>
+    {% if by_station %}
+      {% set values = by_station|map(attribute='avg')|list %}
+      {% set lo = [values|min, 0]|min %}{% set hi = values|max %}{% set span = (hi - lo) or 1 %}
+      {% for row in by_station %}
+        <div class="bar-row">
+          <a href="{{ url_with_args(station_id=row.id) }}" title="{{ row.name }}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.name }}</a>
+          <div class="bar"><span style="width: {{ (6 + 94 * (row.avg - lo) / span)|round(1) }}%"></span></div>
+          <span class="right"><b>{{ row.avg|num }}</b></span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">Дерек жоқ.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

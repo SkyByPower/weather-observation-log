@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ 'Параметрді өңдеу' if parameter else 'Жаңа параметр' }}{% endblock %}
+{% block content %}
+<div class="card form-card">
+  <p class="small"><a href="{{ url_for('admin.parameters') }}">← Параметрлер</a></p>
+  <h1>{{ 'Параметрді өңдеу' if parameter else 'Жаңа параметр' }}</h1>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      {{ field(form.name, placeholder="Температура") }}
+      {{ field(form.code, placeholder="temperature") }}
+      {{ field(form.unit, placeholder="°C") }}
+    </div>
+    <div class="form-row">
+      {{ field(form.min_value, placeholder="-60", inputmode="decimal") }}
+      {{ field(form.max_value, placeholder="60", inputmode="decimal") }}
+    </div>
+    {{ field(form.description, rows=3) }}
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Сақтау</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin.parameters') }}">Болдырмау</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

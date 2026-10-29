@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}404 — Бет табылмады{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="icon">🌫️</div>
+  <div class="code">404</div>
+  <h1>Бет табылмады</h1>
+  <p class="muted">Сіз іздеген бет тұманда жоғалып кетті — мекенжай қате немесе жазба өшірілген болуы мүмкін.</p>
+  <div class="hero-actions" style="justify-content:center;margin-top:18px">
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">Басты бетке</a>
+    <a class="btn btn-ghost" href="{{ url_for('observations.list_observations') }}">Бақылаулар</a>
+  </div>
+</div>
+{% endblock %}

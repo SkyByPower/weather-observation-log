@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "_macros.html" import obs_value %}
+{% block title %}Басты бет{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <h1>Ауа райы бақылау журналы</h1>
+    <p>Метеостанциялардың температура, ылғалдылық, қысым, жел және жауын-шашын бақылауларын тіркеңіз,
+       күн бойынша сүзіп, орташа мәндерді салыстырыңыз.</p>
+  </div>
+  <div class="hero-actions">
+    {% if current_user.is_authenticated %}
+      <a class="btn btn-primary" href="{{ url_for('observations.create') }}">＋ Бақылау қосу</a>
+    {% else %}
+      <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Тіркелу</a>
+    {% endif %}
+    <a class="btn btn-ghost" href="{{ url_for('main.stats') }}">📈 Орташа мәндер</a>
+  </div>
+</section>
+
+<div class="grid grid-4">
+  <div class="tile"><div class="tile-label">Белсенді станциялар</div><div class="tile-value">{{ counts.stations }}</div></div>
+  <div class="tile"><div class="tile-label">Бақылаулар</div><div class="tile-value">{{ counts.observations }}</div></div>
+  <div class="tile"><div class="tile-label">Параметрлер</div><div class="tile-value">{{ counts.parameters }}</div></div>
+  <div class="tile"><div class="tile-label">Пайдаланушылар</div><div class="tile-value">{{ counts.users }}</div></div>
+</div>
+
+<h2 style="margin-top:28px">Соңғы 7 күндегі орташа мәндер <span class="muted small">(барлық станция)</span></h2>
+{% if week_averages %}
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+  {% for a in week_averages %}
+    <a class="tile avg-tile" href="{{ url_for('main.stats', parameter_id=a.id) }}" style="text-decoration:none;color:inherit">
+      <div class="tile-label">{{ a.name }}</div>
+      <div class="tile-value">{{ a.avg|num }} <span class="unit">{{ a.unit }}</span></div>
+      <div class="tile-sub">мин {{ a.min|num }} · макс {{ a.max|num }} · {{ a.count }} өлшем</div>
+    </a>
+  {% endfor %}
+</div>
+{% else %}
+  <p class="muted">Соңғы аптада бақылау жоқ.</p>
+{% endif %}
+
+<div class="grid grid-main" style="margin-top:28px">
+  <section class="card">
+    <div class="card-title">
+      <h2>Соңғы бақылаулар</h2>
+      <a href="{{ url_for('observations.list_observations') }}">Барлығы →</a>
+    </div>
+    {% if latest %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Уақыты</th><th>Станция</th><th>Параметр</th><th class="num">Мәні</th></tr></thead>
+        <tbody>
+        {% for o in latest %}
+          <tr>
+            <td class="nowrap"><a href="{{ url_for('observations.detail', observation_id=o.id) }}">{{ o.observed_at|dt }}</a></td>
+            <td>{{ o.station.name }}</td>
+            <td>{{ o.parameter.name }}</td>
+            <td class="num nowrap">{{ obs_value(o) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty">Әзірге бақылау жоқ.</div>{% endif %}
+  </section>
+
+  <section class="card">
+    <div class="card-title">
+      <h2>Станциялар</h2>
+      <a href="{{ url_for('stations.list_stations') }}">Барлығы →</a>
+    </div>
+    {% for s in stations %}
+      <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <a href="{{ url_for('stations.detail', station_id=s.id) }}"><b>{{ s.name }}</b></a>
+        <div class="muted small">{{ s.city }} · {{ s.code }}{% if s.elevation is not none %} · {{ s.elevation|num(0) }} м{% endif %}</div>
+      </div>
+    {% else %}
+      <div class="empty">Станция жоқ.</div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination as paginate %}
+{% block title %}Станциялар{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Метеостанциялар</h1>
+    <p class="muted">Бақылау жүргізілетін станциялар тізімі.</p>
+  </div>
+  {% if current_user.is_authenticated and current_user.is_admin %}
+    <a class="btn btn-primary" href="{{ url_for('stations.create') }}">＋ Жаңа станция</a>
+  {% endif %}
+</div>
+
+<form class="card filters" method="get" style="margin-bottom:20px">
+  <div class="field wide">
+    <label for="q">Іздеу</label>
+    <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Атауы, коды немесе қала…">
+  </div>
+  <div class="field">
+    <label for="city">Қала</label>
+    <select id="city" name="city">
+      <option value="">Барлығы</option>
+      {% for c in cities %}<option value="{{ c }}" {{ 'selected' if c == filters.city }}>{{ c }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="status">Күйі</label>
+    <select id="status" name="status">
+      <option value="">Барлығы</option>
+      <option value="active" {{ 'selected' if filters.status == 'active' }}>Белсенді</option>
+      <option value="inactive" {{ 'selected' if filters.status == 'inactive' }}>Белсенді емес</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="sort">Сорттау</label>
+    <select id="sort" name="sort">
+      {% for key, (_, label) in sorts.items() %}<option value="{{ key }}" {{ 'selected' if key == filters.sort }}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="btns">
+    <button class="btn btn-primary" type="submit">Қолдану</button>
+    <a class="btn btn-ghost" href="{{ url_for('stations.list_stations') }}">Тазалау</a>
+  </div>
+</form>
+
+{% if pagination.items %}
+<div class="grid grid-3">
+  {% for s in pagination.items %}
+    <article class="card station-card">
+      <div class="photo">
+        {% if s.photo %}<img src="{{ url_for('static', filename='uploads/' ~ s.photo) }}" alt="{{ s.name }}">{% else %}🌤{% endif %}
+      </div>
+      <div class="body">
+        <h3 style="margin:0"><a href="{{ url_for('stations.detail', station_id=s.id) }}">{{ s.name }}</a></h3>
+        <div class="meta">📍 {{ s.city }} · <span class="mono">{{ s.code }}</span></div>
+        <div class="meta">{{ '%.3f'|format(s.latitude) }}°, {{ '%.3f'|format(s.longitude) }}°
+          {% if s.elevation is not none %}· {{ s.elevation|num(0) }} м{% endif %}</div>
+        <div class="foot">
+          {% if s.is_active %}<span class="badge ok">Белсенді</span>{% else %}<span class="badge off">Белсенді емес</span>{% endif %}
+          <span class="muted small">{{ counts.get(s.id, 0) }} бақылау</span>
+        </div>
+      </div>
+    </article>
+  {% endfor %}
+</div>
+{{ paginate(pagination, 'станция') }}
+{% else %}
+  <div class="card empty">Сұраныс бойынша станция табылмады.</div>
+{% endif %}
+{% endblock %}

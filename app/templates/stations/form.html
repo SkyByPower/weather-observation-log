@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ 'Станцияны өңдеу' if station else 'Жаңа станция' }}{% endblock %}
+{% block content %}
+<div class="card form-card">
+  <p class="small">
+    {% if station %}<a href="{{ url_for('stations.detail', station_id=station.id) }}">← {{ station.name }}</a>
+    {% else %}<a href="{{ url_for('stations.list_stations') }}">← Станциялар</a>{% endif %}
+  </p>
+  <h1>{{ 'Станцияны өңдеу' if station else 'Жаңа станция' }}</h1>
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      {{ field(form.name, placeholder="Алматы метеостанциясы") }}
+      {{ field(form.code, placeholder="ALA-01") }}
+    </div>
+    {{ field(form.city, placeholder="Алматы") }}
+    <div class="form-row">
+      {{ field(form.latitude, placeholder="43.2389", inputmode="decimal") }}
+      {{ field(form.longitude, placeholder="76.8897", inputmode="decimal") }}
+      {{ field(form.elevation, placeholder="848", inputmode="decimal") }}
+    </div>
+    <div class="form-row">
+      {{ field(form.phone, placeholder="+7 727 123 45 67", type="tel") }}
+      {{ field(form.email, placeholder="station@example.kz", type="email") }}
+    </div>
+    {{ field(form.description, rows=3) }}
+    {{ field(form.parameter_ids, help="Ешқайсысы белгіленбесе — барлық параметр рұқсат.") }}
+    {% if station and station.photo %}
+      <p class="small muted">Қазіргі фото: <a href="{{ url_for('static', filename='uploads/' ~ station.photo) }}" target="_blank">ашу</a>. Жаңасын жүктесеңіз, ауыстырылады.</p>
+    {% endif %}
+    {{ field(form.photo_file, accept=".png,.jpg,.jpeg,.gif,.webp") }}
+    {{ field(form.is_active) }}
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Сақтау</button>
+      <a class="btn btn-ghost" href="{{ url_for('stations.detail', station_id=station.id) if station else url_for('stations.list_stations') }}">Болдырмау</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

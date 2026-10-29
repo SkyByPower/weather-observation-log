@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination as paginate, obs_value, delete_button %}
+{% block title %}Бақылаулар{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Бақылаулар журналы</h1>
+    <p class="muted">Іздеу, станция/параметр/күн бойынша сүзу және сорттау.</p>
+  </div>
+  {% if current_user.is_authenticated %}
+    <a class="btn btn-primary" href="{{ url_for('observations.create') }}">＋ Бақылау қосу</a>
+  {% endif %}
+</div>
+
+<form class="card filters" method="get" style="margin-bottom:20px">
+  <div class="field wide">
+    <label for="q">Іздеу</label>
+    <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Станция, параметр немесе ескертпе…">
+  </div>
+  <div class="field">
+    <label for="station_id">Станция</label>
+    <select id="station_id" name="station_id">
+      <option value="">Барлығы</option>
+      {% for s in stations %}<option value="{{ s.id }}" {{ 'selected' if s.id == filters.station_id }}>{{ s.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="parameter_id">Параметр</label>
+    <select id="parameter_id" name="parameter_id">
+      <option value="">Барлығы</option>
+      {% for p in parameters %}<option value="{{ p.id }}" {{ 'selected' if p.id == filters.parameter_id }}>{{ p.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="date_from">Күннен</label>
+    <input type="date" id="date_from" name="date_from" value="{{ filters.date_from or '' }}">
+  </div>
+  <div class="field">
+    <label for="date_to">Күнге дейін</label>
+    <input type="date" id="date_to" name="date_to" value="{{ filters.date_to or '' }}">
+  </div>
+  <div class="field">
+    <label for="sort">Сорттау</label>
+    <select id="sort" name="sort">
+      {% for key, (_, label) in sorts.items() %}<option value="{{ key }}" {{ 'selected' if key == filters.sort }}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  {% if current_user.is_authenticated %}
+  <div class="field">
+    <label class="check" style="margin-bottom:9px"><input type="checkbox" name="mine" value="1" {{ 'checked' if filters.mine }}> Тек менікі</label>
+  </div>
+  {% endif %}
+  <div class="btns">
+    <button class="btn btn-primary" type="submit">Қолдану</button>
+    <a class="btn btn-ghost" href="{{ url_for('observations.list_observations') }}">Тазалау</a>
+  </div>
+</form>
+
+<section class="card">
+  {% if summary and summary.count %}
+    <div class="summary-strip">
+      <span>📊 <b>{{ summary.parameter.name }}</b> — сүзілген {{ summary.count }} өлшем бойынша:</span>
+      <span>орташа <b>{{ summary.avg|num(2) }} {{ summary.parameter.unit }}</b></span>
+      <span>мин <b>{{ summary.min|num }}</b></span>
+      <span>макс <b>{{ summary.max|num }}</b></span>
+    </div>
+  {% elif not filters.parameter_id %}
+    <p class="muted small">💡 Орташа мәнді көру үшін бір параметрді таңдаңыз.</p>
+  {% endif %}
+
+  {% if pagination.items %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Уақыты</th><th>Станция</th><th>Параметр</th><th class="num">Мәні</th><th>Ескертпе</th><th>Автор</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for o in pagination.items %}
+        <tr>
+          <td class="nowrap"><a href="{{ url_for('observations.detail', observation_id=o.id) }}">{{ o.observed_at|dt }}</a></td>
+          <td><a href="{{ url_for('stations.detail', station_id=o.station_id) }}">{{ o.station.name }}</a></td>
+          <td>{{ o.parameter.name }}</td>
+          <td class="num nowrap">{{ obs_value(o) }}</td>
+          <td class="small">{{ o.note or '' }}{% if o.attachment %} 📎{% endif %}</td>
+          <td class="small muted">{{ o.author.username if o.author else '—' }}</td>
+          <td>
+            {% if o.can_edit(current_user) %}
+              <div class="actions">
+                <a href="{{ url_for('observations.edit', observation_id=o.id) }}">Өңдеу</a>
+                {{ delete_button(url_for('observations.delete', observation_id=o.id), 'Бұл бақылауды өшіресіз бе?') }}
+              </div>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ paginate(pagination, 'бақылау') }}
+  {% else %}
+    <div class="empty">Сүзгіге сәйкес бақылау табылмады.</div>
+  {% endif %}
+</section>
+{% endblock %}
