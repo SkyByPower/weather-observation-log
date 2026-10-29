@@ -4,6 +4,9 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, func
 
 from . import db
+from .i18n import gettext as _
+from .i18n import lazy_gettext as _l
+from .i18n import translate_data
 from .models import Observation, Parameter, Station
 
 
@@ -26,18 +29,23 @@ def check_observation(station, parameter, value, observed_at):
     """Форма мен API үшін ортақ бизнес-ережелер. {өріс: қате} сөздігін қайтарады."""
     errors = {}
     if station is None:
-        errors["station_id"] = "Станция табылмады."
+        errors["station_id"] = _("Станция табылмады.")
     if parameter is None:
-        errors["parameter_id"] = "Параметр табылмады."
+        errors["parameter_id"] = _("Параметр табылмады.")
     if station and parameter and station.parameters and parameter not in station.parameters:
-        errors["parameter_id"] = f"«{station.name}» станциясы бұл параметрді өлшемейді."
+        errors["parameter_id"] = _(
+            "«{name}» станциясы бұл параметрді өлшемейді.", name=translate_data(station.name)
+        )
     if parameter and value is not None and not parameter.min_value <= value <= parameter.max_value:
-        errors["value"] = (
-            f"{parameter.name} мәні {parameter.min_value:g}…{parameter.max_value:g} "
-            f"{parameter.unit} аралығында болуы керек."
+        errors["value"] = _(
+            "{name} мәні {min}…{max} {unit} аралығында болуы керек.",
+            name=translate_data(parameter.name),
+            min=f"{parameter.min_value:g}",
+            max=f"{parameter.max_value:g}",
+            unit=parameter.unit,
         )
     if observed_at and observed_at > datetime.now() + timedelta(minutes=5):
-        errors["observed_at"] = "Болашақ уақытты енгізуге болмайды."
+        errors["observed_at"] = _("Болашақ уақытты енгізуге болмайды.")
     return errors
 
 
@@ -137,14 +145,14 @@ def build_line_chart(daily, width=760, height=260, pad_x=48, pad_y=28):
 
 
 WEATHER_LABELS = {
-    "sun": "Ашық",
-    "night": "Ашық түн",
-    "partly": "Аздап бұлтты",
-    "cloud": "Бұлтты",
-    "rain": "Жаңбыр",
-    "snow": "Қар",
-    "storm": "Нөсер",
-    "wind": "Желді",
+    "sun": _l("Ашық"),
+    "night": _l("Ашық түн"),
+    "partly": _l("Аздап бұлтты"),
+    "cloud": _l("Бұлтты"),
+    "rain": _l("Жаңбыр"),
+    "snow": _l("Қар"),
+    "storm": _l("Нөсер"),
+    "wind": _l("Желді"),
 }
 
 
@@ -188,6 +196,6 @@ def latest_conditions():
         item["values"][code] = value
     for item in conditions.values():
         item["kind"] = weather_kind(item["values"], item["observed_at"])
-        item["label"] = WEATHER_LABELS[item["kind"]]
+        item["label"] = str(WEATHER_LABELS[item["kind"]])
         item["temp"] = item["values"].get("temperature")
     return conditions

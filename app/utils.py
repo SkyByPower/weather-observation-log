@@ -8,6 +8,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from . import login_manager
+from .i18n import gettext as _
 
 IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 DOCUMENT_EXTENSIONS = {"pdf", "png", "jpg", "jpeg", "csv", "txt"}
@@ -51,7 +52,7 @@ def save_upload(storage, subfolder, allowed_extensions):
     """Файлды қауіпсіз атпен сақтап, uploads/ ішіндегі салыстырмалы жолын қайтарады."""
     filename = secure_filename(storage.filename or "")
     if not filename or not allowed_file(filename, allowed_extensions):
-        raise ValueError("Рұқсат етілмеген файл түрі: " + ", ".join(sorted(allowed_extensions)))
+        raise ValueError(_("Рұқсат етілмеген файл түрі: {types}", types=", ".join(sorted(allowed_extensions))))
 
     ext = file_extension(filename)
     signatures = FILE_SIGNATURES.get(ext)
@@ -59,7 +60,7 @@ def save_upload(storage, subfolder, allowed_extensions):
         head = storage.stream.read(16)
         storage.stream.seek(0)
         if not head.startswith(signatures):
-            raise ValueError("Файл мазмұны кеңейтіміне сәйкес келмейді.")
+            raise ValueError(_("Файл мазмұны кеңейтіміне сәйкес келмейді."))
 
     new_name = f"{uuid.uuid4().hex}.{ext}"
     storage.save(os.path.join(current_app.config["UPLOAD_FOLDER"], subfolder, new_name))

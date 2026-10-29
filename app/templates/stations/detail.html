@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% from "_macros.html" import obs_value, delete_button, wx, param_icon %}
-{% block title %}{{ station.name }}{% endblock %}
+{% block title %}{{ station.name|tr }}{% endblock %}
 {% block content %}
 {% set kind = condition.kind if condition else 'cloud' %}
-<a class="back-link" href="{{ url_for('stations.list_stations') }}">← Станциялар</a>
+<a class="back-link" href="{{ url_for('stations.list_stations') }}">← {{ _("Станциялар") }}</a>
 <section class="station-banner k-{{ kind }}">
   <div class="drift" style="--y:18%;--t:70s;--d:-20s"><div class="cloud" style="--w:180px;--o:.35"></div></div>
   <div class="drift" style="--y:55%;--t:95s;--d:-60s"><div class="cloud" style="--w:240px;--o:.25"></div></div>
   <div class="left">
-    <h1>{{ station.name }}</h1>
+    <h1>{{ station.name|tr }}</h1>
     <div class="meta">
-      <span>📍 {{ station.city }}</span><span class="mono">{{ station.code }}</span>
-      {% if station.is_active %}<span class="badge ok" style="background:rgba(255,255,255,.2);color:#fff">Белсенді</span>
-      {% else %}<span class="badge off" style="background:rgba(255,255,255,.2);color:#fff">Белсенді емес</span>{% endif %}
+      <span>📍 {{ station.city|tr }}</span><span class="mono">{{ station.code }}</span>
+      {% if station.is_active %}<span class="badge ok" style="background:rgba(255,255,255,.2);color:#fff">{{ _("Белсенді") }}</span>
+      {% else %}<span class="badge off" style="background:rgba(255,255,255,.2);color:#fff">{{ _("Белсенді емес") }}</span>{% endif %}
     </div>
     <div class="hero-actions">
       {% if current_user.is_authenticated %}
-        <a class="btn btn-glass" href="{{ url_for('observations.create', station_id=station.id) }}">＋ Бақылау қосу</a>
+        <a class="btn btn-glass" href="{{ url_for('observations.create', station_id=station.id) }}">＋ {{ _("Бақылау қосу") }}</a>
       {% endif %}
-      <a class="btn btn-glass" href="{{ url_for('main.stats', station_id=station.id) }}">📈 Статистика</a>
+      <a class="btn btn-glass" href="{{ url_for('main.stats', station_id=station.id) }}">📈 {{ _("Статистика") }}</a>
       {% if current_user.is_authenticated and current_user.is_admin %}
-        <a class="btn btn-glass" href="{{ url_for('stations.edit', station_id=station.id) }}">✏️ Өңдеу</a>
+        <a class="btn btn-glass" href="{{ url_for('stations.edit', station_id=station.id) }}">✏️ {{ _("Өңдеу") }}</a>
       {% endif %}
     </div>
   </div>
@@ -28,8 +28,8 @@
     {{ wx(kind, 110) }}
     <div>
       <div class="temp">{% if condition and condition.temp is not none %}{{ '%+.1f'|format(condition.temp) }}°{% else %}—{% endif %}</div>
-      <div class="cond">{{ condition.label if condition else 'Дерек жоқ' }}</div>
-      {% if condition %}<div class="small" style="opacity:.8">соңғы өлшем: {{ condition.observed_at|dt }}</div>{% endif %}
+      <div class="cond">{{ condition.label if condition else _("Дерек жоқ") }}</div>
+      {% if condition %}<div class="small" style="opacity:.8">{{ _("соңғы өлшем") }}: {{ condition.observed_at|dt }}</div>{% endif %}
     </div>
   </div>
 </section>
@@ -37,14 +37,14 @@
 <div class="grid grid-main">
   <div class="stack">
     <section class="card">
-      <h2>📊 Соңғы 7 күндегі орташа мәндер</h2>
+      <h2>📊 {{ _("Соңғы 7 күндегі орташа мәндер") }}</h2>
       {% if averages %}
       <div class="table-wrap"><table>
-        <thead><tr><th>Параметр</th><th class="num">Орташа</th><th class="num">Мин</th><th class="num">Макс</th><th class="num">Саны</th></tr></thead>
+        <thead><tr><th>{{ _("Параметр") }}</th><th class="num">{{ _("Орташа") }}</th><th class="num">{{ _("Мин") }}</th><th class="num">{{ _("Макс") }}</th><th class="num">{{ _("Саны") }}</th></tr></thead>
         <tbody>
         {% for a in averages %}
           <tr>
-            <td><a class="cell-station" href="{{ url_for('main.stats', station_id=station.id, parameter_id=a.id) }}">{{ param_icon(a.code) }} {{ a.name }}</a></td>
+            <td><a class="cell-station" href="{{ url_for('main.stats', station_id=station.id, parameter_id=a.id) }}">{{ param_icon(a.code) }} {{ a.name|tr }}</a></td>
             <td class="num"><b>{{ a.avg|num }}</b> {{ a.unit }}</td>
             <td class="num">{{ a.min|num }}</td>
             <td class="num">{{ a.max|num }}</td>
@@ -53,59 +53,59 @@
         {% endfor %}
         </tbody>
       </table></div>
-      {% else %}<div class="empty">Соңғы аптада бақылау жоқ.</div>{% endif %}
+      {% else %}<div class="empty">{{ _("Соңғы аптада бақылау жоқ.") }}</div>{% endif %}
     </section>
 
     <section class="card">
       <div class="card-title">
-        <h2>🕒 Соңғы бақылаулар</h2>
-        <a href="{{ url_for('observations.list_observations', station_id=station.id) }}">Барлығы ({{ total }}) →</a>
+        <h2>🕒 {{ _("Соңғы бақылаулар") }}</h2>
+        <a href="{{ url_for('observations.list_observations', station_id=station.id) }}">{{ _("Барлығы") }} ({{ total }}) →</a>
       </div>
       {% if latest %}
       <div class="table-wrap"><table>
-        <thead><tr><th>Уақыты</th><th>Параметр</th><th class="num">Мәні</th><th>Ескертпе</th></tr></thead>
+        <thead><tr><th>{{ _("Уақыты") }}</th><th>{{ _("Параметр") }}</th><th class="num">{{ _("Мәні") }}</th><th>{{ _("Ескертпе") }}</th></tr></thead>
         <tbody>
         {% for o in latest %}
           <tr>
             <td class="nowrap"><a href="{{ url_for('observations.detail', observation_id=o.id) }}">{{ o.observed_at|dt }}</a></td>
-            <td><span class="cell-station">{{ param_icon(o.parameter.code) }} {{ o.parameter.name }}</span></td>
+            <td><span class="cell-station">{{ param_icon(o.parameter.code) }} {{ o.parameter.name|tr }}</span></td>
             <td class="num nowrap">{{ obs_value(o) }}</td>
-            <td class="muted small">{{ o.note or '' }}</td>
+            <td class="muted small">{{ (o.note or '')|tr }}</td>
           </tr>
         {% endfor %}
         </tbody>
       </table></div>
-      {% else %}<div class="empty">Бақылау әлі жоқ.</div>{% endif %}
+      {% else %}<div class="empty">{{ _("Бақылау әлі жоқ.") }}</div>{% endif %}
     </section>
   </div>
 
   <aside class="stack">
     {% if station.photo %}
-      <img class="station-hero-img" src="{{ url_for('static', filename='uploads/' ~ station.photo) }}" alt="{{ station.name }}">
+      <img class="station-hero-img" src="{{ url_for('static', filename='uploads/' ~ station.photo) }}" alt="{{ station.name|tr }}">
     {% endif %}
     <section class="card">
-      <h2>ℹ️ Мәліметтер</h2>
+      <h2>ℹ️ {{ _("Мәліметтер") }}</h2>
       <dl class="props">
-        <dt>Координаттар</dt><dd>{{ '%.4f'|format(station.latitude) }}°, {{ '%.4f'|format(station.longitude) }}°</dd>
-        <dt>Биіктік</dt><dd>{{ station.elevation|num(0) }}{% if station.elevation is not none %} м{% endif %}</dd>
-        <dt>Телефон</dt><dd>{{ station.phone or '—' }}</dd>
+        <dt>{{ _("Координаттар") }}</dt><dd>{{ '%.4f'|format(station.latitude) }}°, {{ '%.4f'|format(station.longitude) }}°</dd>
+        <dt>{{ _("Биіктік") }}</dt><dd>{{ station.elevation|num(0) }}{% if station.elevation is not none %} {{ _("м") }}{% endif %}</dd>
+        <dt>{{ _("Телефон") }}</dt><dd>{{ station.phone or '—' }}</dd>
         <dt>Email</dt><dd>{% if station.email %}<a href="mailto:{{ station.email }}">{{ station.email }}</a>{% else %}—{% endif %}</dd>
-        <dt>Қосылған</dt><dd>{{ station.created_at|dt('%d.%m.%Y') }}</dd>
+        <dt>{{ _("Қосылған") }}</dt><dd>{{ station.created_at|dt('%d.%m.%Y') }}</dd>
       </dl>
-      {% if station.description %}<p style="margin:16px 0 0" class="muted">{{ station.description }}</p>{% endif %}
+      {% if station.description %}<p style="margin:16px 0 0" class="muted">{{ station.description|tr }}</p>{% endif %}
     </section>
     <section class="card">
-      <h2>🎛️ Өлшенетін параметрлер</h2>
+      <h2>🎛️ {{ _("Өлшенетін параметрлер") }}</h2>
       <div class="tag-list">
-        {% for p in station.parameters %}<span class="badge">{{ p.name }}, {{ p.unit }}</span>
-        {% else %}<span class="muted">Барлық параметр</span>{% endfor %}
+        {% for p in station.parameters %}<span class="badge">{{ p.name|tr }}, {{ p.unit }}</span>
+        {% else %}<span class="muted">{{ _("Барлық параметр") }}</span>{% endfor %}
       </div>
     </section>
     {% if current_user.is_authenticated and current_user.is_admin %}
     <section class="card danger-zone">
-      <h3>⚠️ Қауіпті аймақ</h3>
-      <p class="muted small">Станцияны өшірсеңіз, оның барлық {{ total }} бақылауы да өшіріледі.</p>
-      {{ delete_button(url_for('stations.delete', station_id=station.id), 'Станция және оның барлық бақылаулары өшіріледі. Сенімдісіз бе?', 'Станцияны өшіру', 'btn btn-danger btn-sm') }}
+      <h3>⚠️ {{ _("Қауіпті аймақ") }}</h3>
+      <p class="muted small">{{ _("Станцияны өшірсеңіз, оның барлық {count} бақылауы да өшіріледі.", count=total) }}</p>
+      {{ delete_button(url_for('stations.delete', station_id=station.id), _("Станция және оның барлық бақылаулары өшіріледі. Сенімдісіз бе?"), _("Станцияны өшіру"), 'btn btn-danger btn-sm') }}
     </section>
     {% endif %}
   </aside>

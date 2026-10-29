@@ -103,13 +103,13 @@ main.container { padding-top: 28px; padding-bottom: 56px; min-height: calc(100vh
   background: var(--nav-bg); backdrop-filter: saturate(180%) blur(16px); -webkit-backdrop-filter: saturate(180%) blur(16px);
   border-bottom: 1px solid var(--border);
 }
-.nav { display: flex; align-items: center; gap: 22px; min-height: 66px; flex-wrap: wrap; }
+.nav { display: flex; align-items: center; gap: 18px; min-height: 66px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 800; font-size: 1.12rem; letter-spacing: -.02em; }
 .brand:hover { color: var(--text); }
 .brand small { display: block; font-weight: 500; font-size: .7rem; color: var(--muted); letter-spacing: 0; margin-top: -3px; }
-.nav-links { display: flex; gap: 2px; flex: 1; flex-wrap: wrap; }
+.nav-links { display: flex; gap: 2px; flex: 1; flex-wrap: nowrap; white-space: nowrap; min-width: 0; }
 .nav-links a {
-  position: relative; color: var(--muted); padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: .92rem;
+  position: relative; color: var(--muted); padding: 8px 12px; border-radius: 10px; font-weight: 600; font-size: .9rem;
   transition: color .2s, background .2s;
 }
 .nav-links a:hover { color: var(--text); background: var(--primary-soft); }
@@ -127,6 +127,15 @@ main.container { padding-top: 28px; padding-bottom: 56px; min-height: calc(100vh
   width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff;
   background: var(--grad); font-size: .8rem; font-weight: 800; text-transform: uppercase;
 }
+.lang-switch {
+  display: inline-flex; padding: 3px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+}
+.lang-switch a {
+  padding: 5px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; letter-spacing: .04em; color: var(--muted);
+  transition: color .2s, background .25s, box-shadow .25s;
+}
+.lang-switch a:hover { color: var(--text); }
+.lang-switch a.active { background: var(--grad); color: #fff; box-shadow: 0 4px 12px -4px rgba(47, 107, 255, .6); }
 .theme-toggle {
   width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface);
   cursor: pointer; display: grid; place-items: center; font-size: 1.05rem; transition: transform .4s var(--ease), border-color .2s;
@@ -754,6 +763,17 @@ footer .brand-mini { display: flex; align-items: center; gap: 8px; font-weight: 
 /* =========================================================
    Responsive
    ========================================================= */
+@media (max-width: 1360px) {
+  .user-chip .badge { display: none; }
+  .nav { gap: 14px; }
+  .nav-links a { padding: 8px 10px; }
+}
+@media (max-width: 1120px) {
+  .nav-burger { display: grid; place-items: center; margin-left: auto; font-size: 1.4rem; cursor: pointer; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); }
+  .nav-links, .nav-user { display: none; width: 100%; }
+  .nav-toggle:checked ~ .nav-links, .nav-toggle:checked ~ .nav-user { display: flex; flex-direction: column; align-items: stretch; padding-bottom: 14px; }
+  .nav-toggle:checked ~ .nav-user { flex-direction: row; flex-wrap: wrap; align-items: center; }
+}
 @media (max-width: 960px) {
   .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grid-main, .grid-2 { grid-template-columns: 1fr; }
@@ -762,9 +782,6 @@ footer .brand-mini { display: flex; align-items: center; gap: 8px; font-weight: 
   .hero .sky-sun, .hero .sky-moon { right: 6%; }
   .auth-split { grid-template-columns: 1fr; }
   .auth-visual { min-height: 220px; }
-  .nav-burger { display: grid; place-items: center; margin-left: auto; font-size: 1.4rem; cursor: pointer; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); }
-  .nav-links, .nav-user { display: none; width: 100%; }
-  .nav-toggle:checked ~ .nav-links, .nav-toggle:checked ~ .nav-user { display: flex; flex-direction: column; align-items: stretch; padding-bottom: 14px; }
   .filters .wide { grid-column: auto; }
 }
 @media (max-width: 600px) {

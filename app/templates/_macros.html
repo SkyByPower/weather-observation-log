@@ -11,9 +11,9 @@
   </div>
 {% endmacro %}
 
-{% macro pagination(p, noun='жазба') %}
+{% macro pagination(p, noun=None) %}
   {% if p.pages > 1 %}
-    <nav class="pagination" aria-label="Беттеу">
+    <nav class="pagination" aria-label="{{ _('Беттеу') }}">
       {% if p.has_prev %}<a href="{{ url_with_args(page=p.prev_num) }}">‹</a>
       {% else %}<span class="disabled">‹</span>{% endif %}
       {% for n in p.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
@@ -26,14 +26,14 @@
     </nav>
   {% endif %}
   {% if p.total %}
-    <p class="muted small page-info">Барлығы {{ p.total }} {{ noun }} · {{ p.first }}–{{ p.last }} көрсетілген · {{ p.page }}/{{ p.pages }} бет</p>
+    <p class="muted small page-info">{{ _("Барлығы {total} {noun} · {first}–{last} көрсетілген · {page}/{pages} бет", total=p.total, noun=noun or _("жазба"), first=p.first, last=p.last, page=p.page, pages=p.pages) }}</p>
   {% endif %}
 {% endmacro %}
 
-{% macro delete_button(action, confirm_text, label='Өшіру', cls='btn-link danger') %}
+{% macro delete_button(action, confirm_text, label=None, cls='btn-link danger') %}
   <form method="post" action="{{ action }}" class="inline" onsubmit="return confirm('{{ confirm_text }}');">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="{{ cls }}">{{ label }}</button>
+    <button type="submit" class="{{ cls }}">{{ label or _("Өшіру") }}</button>
   </form>
 {% endmacro %}
 

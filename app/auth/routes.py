@@ -6,6 +6,7 @@ from sqlalchemy import func
 
 from .. import db
 from ..forms import LoginForm, RegisterForm
+from ..i18n import gettext as _
 from ..models import Observation, User, generate_token
 from . import bp
 
@@ -27,7 +28,7 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash("Тіркелу сәтті өтті! Енді жүйеге кіріңіз.", "success")
+        flash(_("Тіркелу сәтті өтті! Енді жүйеге кіріңіз."), "success")
         return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
 
@@ -41,9 +42,9 @@ def login():
         user = User.query.filter(func.lower(User.username) == form.username.data.strip().lower()).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
-            flash(f"Қош келдіңіз, {user.username}!", "success")
+            flash(_("Қош келдіңіз, {name}!", name=user.username), "success")
             return redirect(_safe_next(request.args.get("next")) or url_for("main.index"))
-        flash("Пайдаланушы аты немесе құпиясөз қате.", "danger")
+        flash(_("Пайдаланушы аты немесе құпиясөз қате."), "danger")
     return render_template("auth/login.html", form=form)
 
 
@@ -51,7 +52,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Сіз жүйеден шықтыңыз.", "info")
+    flash(_("Сіз жүйеден шықтыңыз."), "info")
     return redirect(url_for("main.index"))
 
 
@@ -71,5 +72,5 @@ def profile():
 def regenerate_token():
     current_user.api_token = generate_token()
     db.session.commit()
-    flash("Жаңа API кілті жасалды. Ескі кілт енді жарамсыз.", "success")
+    flash(_("Жаңа API кілті жасалды. Ескі кілт енді жарамсыз."), "success")
     return redirect(url_for("auth.profile"))

@@ -4,6 +4,7 @@ from sqlalchemy import func, or_
 
 from .. import db
 from ..forms import ParameterForm
+from ..i18n import gettext as _
 from ..models import ROLES, Observation, Parameter, User
 from ..utils import admin_required
 from . import bp
@@ -45,13 +46,13 @@ def change_role(user_id):
     user = db.get_or_404(User, user_id)
     role = request.form.get("role")
     if role not in ROLES:
-        flash("Белгісіз рөл.", "danger")
+        flash(_("Белгісіз рөл."), "danger")
     elif user.id == current_user.id:
-        flash("Өз рөліңізді өзгерте алмайсыз.", "warning")
+        flash(_("Өз рөліңізді өзгерте алмайсыз."), "warning")
     else:
         user.role = role
         db.session.commit()
-        flash(f"{user.username} рөлі «{role}» болып өзгертілді.", "success")
+        flash(_("{user} рөлі «{role}» болып өзгертілді.", user=user.username, role=role), "success")
     return redirect(url_for("admin.users"))
 
 
@@ -60,13 +61,13 @@ def change_role(user_id):
 def delete_user(user_id):
     user = db.get_or_404(User, user_id)
     if user.id == current_user.id:
-        flash("Өз аккаунтыңызды өшіре алмайсыз.", "warning")
+        flash(_("Өз аккаунтыңызды өшіре алмайсыз."), "warning")
         return redirect(url_for("admin.users"))
     # Бақылаулар сақталады, тек авторы бос қалады
     Observation.query.filter_by(user_id=user.id).update({"user_id": None})
     db.session.delete(user)
     db.session.commit()
-    flash(f"{user.username} пайдаланушысы өшірілді.", "info")
+    flash(_("{user} пайдаланушысы өшірілді.", user=user.username), "info")
     return redirect(url_for("admin.users"))
 
 
@@ -101,7 +102,7 @@ def create_parameter():
         _fill_parameter(parameter, form)
         db.session.add(parameter)
         db.session.commit()
-        flash(f"«{parameter.name}» параметрі қосылды.", "success")
+        flash(_("«{name}» параметрі қосылды.", name=parameter.name), "success")
         return redirect(url_for("admin.parameters"))
     return render_template("admin/parameter_form.html", form=form, parameter=None)
 
@@ -114,7 +115,7 @@ def edit_parameter(parameter_id):
     if form.validate_on_submit():
         _fill_parameter(parameter, form)
         db.session.commit()
-        flash("Параметр жаңартылды.", "success")
+        flash(_("Параметр жаңартылды."), "success")
         return redirect(url_for("admin.parameters"))
     return render_template("admin/parameter_form.html", form=form, parameter=parameter)
 
@@ -125,9 +126,9 @@ def delete_parameter(parameter_id):
     parameter = db.get_or_404(Parameter, parameter_id)
     used = parameter.observations.count()
     if used:
-        flash(f"«{parameter.name}» параметрін өшіру мүмкін емес: оған {used} бақылау тіркелген.", "danger")
+        flash(_("«{name}» параметрін өшіру мүмкін емес: оған {count} бақылау тіркелген.", name=parameter.name, count=used), "danger")
     else:
         db.session.delete(parameter)
         db.session.commit()
-        flash(f"«{parameter.name}» параметрі өшірілді.", "info")
+        flash(_("«{name}» параметрі өшірілді.", name=parameter.name), "info")
     return redirect(url_for("admin.parameters"))

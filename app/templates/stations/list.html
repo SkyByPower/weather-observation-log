@@ -1,47 +1,47 @@
 {% extends "base.html" %}
 {% from "_macros.html" import pagination as paginate, wx %}
-{% block title %}Станциялар{% endblock %}
+{% block title %}{{ _("Станциялар") }}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <span class="eyebrow">📡 Желі</span>
-    <h1>Метеостанциялар</h1>
-    <p class="muted">Әр станцияның соңғы өлшемі бойынша ауа райы көрсетілген.</p>
+    <span class="eyebrow">📡 {{ _("Желі") }}</span>
+    <h1>{{ _("Метеостанциялар") }}</h1>
+    <p class="muted">{{ _("Әр станцияның соңғы өлшемі бойынша ауа райы көрсетілген.") }}</p>
   </div>
   {% if current_user.is_authenticated and current_user.is_admin %}
-    <a class="btn btn-primary" href="{{ url_for('stations.create') }}">＋ Жаңа станция</a>
+    <a class="btn btn-primary" href="{{ url_for('stations.create') }}">＋ {{ _("Жаңа станция") }}</a>
   {% endif %}
 </div>
 
 <form class="card filters" method="get" style="margin-bottom:24px">
   <div class="field wide search-input">
-    <label for="q">Іздеу</label>
-    <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Атауы, коды немесе қала…">
+    <label for="q">{{ _("Іздеу") }}</label>
+    <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="{{ _('Атауы, коды немесе қала…') }}">
   </div>
   <div class="field">
-    <label for="city">Қала</label>
+    <label for="city">{{ _("Қала") }}</label>
     <select id="city" name="city">
-      <option value="">Барлығы</option>
-      {% for c in cities %}<option value="{{ c }}" {{ 'selected' if c == filters.city }}>{{ c }}</option>{% endfor %}
+      <option value="">{{ _("Барлығы") }}</option>
+      {% for c in cities %}<option value="{{ c }}" {{ 'selected' if c == filters.city }}>{{ c|tr }}</option>{% endfor %}
     </select>
   </div>
   <div class="field">
-    <label for="status">Күйі</label>
+    <label for="status">{{ _("Күйі") }}</label>
     <select id="status" name="status">
-      <option value="">Барлығы</option>
-      <option value="active" {{ 'selected' if filters.status == 'active' }}>Белсенді</option>
-      <option value="inactive" {{ 'selected' if filters.status == 'inactive' }}>Белсенді емес</option>
+      <option value="">{{ _("Барлығы") }}</option>
+      <option value="active" {{ 'selected' if filters.status == 'active' }}>{{ _("Белсенді") }}</option>
+      <option value="inactive" {{ 'selected' if filters.status == 'inactive' }}>{{ _("Белсенді емес") }}</option>
     </select>
   </div>
   <div class="field">
-    <label for="sort">Сорттау</label>
+    <label for="sort">{{ _("Сорттау") }}</label>
     <select id="sort" name="sort">
-      {% for key, (_, label) in sorts.items() %}<option value="{{ key }}" {{ 'selected' if key == filters.sort }}>{{ label }}</option>{% endfor %}
+      {% for key, (_order, label) in sorts.items() %}<option value="{{ key }}" {{ 'selected' if key == filters.sort }}>{{ label }}</option>{% endfor %}
     </select>
   </div>
   <div class="btns">
-    <button class="btn btn-primary" type="submit">Қолдану</button>
-    <a class="btn btn-ghost" href="{{ url_for('stations.list_stations') }}">Тазалау</a>
+    <button class="btn btn-primary" type="submit">{{ _("Қолдану") }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('stations.list_stations') }}">{{ _("Тазалау") }}</a>
   </div>
 </form>
 
@@ -52,27 +52,27 @@
     {% set kind = c.kind if c else 'cloud' %}
     <article class="card station-card">
       <a class="photo k-{{ kind }} {{ 'has-img' if s.photo }}" href="{{ url_for('stations.detail', station_id=s.id) }}">
-        {% if s.photo %}<img src="{{ url_for('static', filename='uploads/' ~ s.photo) }}" alt="{{ s.name }}">{% endif %}
+        {% if s.photo %}<img src="{{ url_for('static', filename='uploads/' ~ s.photo) }}" alt="{{ s.name|tr }}">{% endif %}
         {{ wx(kind, 92) }}
         <span class="temp">
           {% if c and c.temp is not none %}{{ '%+.0f'|format(c.temp) }}°{% else %}—{% endif %}
-          <small>{{ c.label if c else 'дерек жоқ' }}</small>
+          <small>{{ c.label if c else _("дерек жоқ") }}</small>
         </span>
         <span class="shine"></span>
       </a>
       <div class="body">
-        <h3 style="margin:0"><a href="{{ url_for('stations.detail', station_id=s.id) }}">{{ s.name }}</a></h3>
-        <div class="meta">📍 {{ s.city }} · <span class="mono">{{ s.code }}</span>{% if s.elevation is not none %} · ⛰ {{ s.elevation|num(0) }} м{% endif %}</div>
+        <h3 style="margin:0"><a href="{{ url_for('stations.detail', station_id=s.id) }}">{{ s.name|tr }}</a></h3>
+        <div class="meta">📍 {{ s.city|tr }} · <span class="mono">{{ s.code }}</span>{% if s.elevation is not none %} · ⛰ {{ s.elevation|num(0) }} {{ _("м") }}{% endif %}</div>
         <div class="foot">
-          {% if s.is_active %}<span class="badge ok">Белсенді</span>{% else %}<span class="badge off">Белсенді емес</span>{% endif %}
-          <span class="muted small">📝 {{ counts.get(s.id, 0) }} бақылау</span>
+          {% if s.is_active %}<span class="badge ok">{{ _("Белсенді") }}</span>{% else %}<span class="badge off">{{ _("Белсенді емес") }}</span>{% endif %}
+          <span class="muted small">📝 {{ _("{count} бақылау", count=counts.get(s.id, 0)) }}</span>
         </div>
       </div>
     </article>
   {% endfor %}
 </div>
-{{ paginate(pagination, 'станция') }}
+{{ paginate(pagination, _("станция")) }}
 {% else %}
-  <div class="card empty">Сұраныс бойынша станция табылмады.</div>
+  <div class="card empty">{{ _("Сұраныс бойынша станция табылмады.") }}</div>
 {% endif %}
 {% endblock %}

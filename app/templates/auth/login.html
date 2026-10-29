@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% from "_macros.html" import field, sky %}
-{% block title %}Кіру{% endblock %}
+{% block title %}{{ _("Кіру") }}{% endblock %}
 {% block content %}
 <div class="auth-split">
   <div class="auth-visual">
     {{ sky(clouds=3) }}
     <div class="inner">
       <span class="eyebrow" style="color:rgba(255,255,255,.9)">⛅ Weather Log</span>
-      <h2>Қайта оралғаныңызға қуаныштымыз!</h2>
-      <p>Кіріп, бүгінгі бақылауларды тіркеңіз және станциялардағы өзгерістерді қадағалаңыз.</p>
+      <h2>{{ _("Қайта оралғаныңызға қуаныштымыз!") }}</h2>
+      <p>{{ _("Кіріп, бүгінгі бақылауларды тіркеңіз және станциялардағы өзгерістерді қадағалаңыз.") }}</p>
     </div>
   </div>
   <div class="auth-form">
-    <h1>Жүйеге кіру</h1>
-    <p class="muted">Аккаунтыңыздың деректерін енгізіңіз.</p>
+    <h1>{{ _("Жүйеге кіру") }}</h1>
+    <p class="muted">{{ _("Аккаунтыңыздың деректерін енгізіңіз.") }}</p>
     <form method="post" novalidate>
       {{ form.hidden_tag() }}
-      {{ field(form.username, autocomplete="username", autofocus=true, placeholder="мыс. admin") }}
+      {{ field(form.username, autocomplete="username", autofocus=true, placeholder=_("мыс. admin")) }}
       {{ field(form.password, autocomplete="current-password", placeholder="••••••") }}
       {{ field(form.remember) }}
-      <button class="btn btn-primary" type="submit" style="width:100%">Кіру →</button>
+      <button class="btn btn-primary" type="submit" style="width:100%">{{ _("Кіру") }} →</button>
     </form>
-    <p class="muted small" style="margin-top:16px">Аккаунтыңыз жоқ па? <a href="{{ url_for('auth.register') }}">Тіркеліңіз</a></p>
-    <div class="demo-hint">🔑 Демо: <b>admin</b> / admin123 · <b>user</b> / user123</div>
+    <p class="muted small" style="margin-top:16px">{{ _("Аккаунтыңыз жоқ па?") }} <a href="{{ url_for('auth.register') }}">{{ _("Тіркеліңіз") }}</a></p>
+    <div class="demo-hint">🔑 {{ _("Демо") }}: <b>admin</b> / admin123 · <b>user</b> / user123</div>
   </div>
 </div>
 {% endblock %}

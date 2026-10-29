@@ -1,8 +1,12 @@
 from datetime import date, timedelta
 
-from flask import flash, render_template, request
+from urllib.parse import urlsplit
+
+from flask import flash, redirect, render_template, request, session, url_for
 
 from .. import db
+from ..i18n import LANGUAGES
+from ..i18n import gettext as _
 from ..models import Observation, Parameter, Station, User
 from ..services import (
     build_line_chart,
@@ -52,7 +56,7 @@ def stats():
     if date_from is None and date_to is None:
         date_from, date_to = today - timedelta(days=13), today
     if date_from and date_to and date_from > date_to:
-        flash("Басталу күні аяқталу күнінен кейін болмауы керек — күндер ауыстырылды.", "warning")
+        flash(_("Басталу күні аяқталу күнінен кейін болмауы керек — күндер ауыстырылды."), "warning")
         date_from, date_to = date_to, date_from
 
     parameters = Parameter.query.order_by(Parameter.name).all()
@@ -80,3 +84,14 @@ def stats():
         chart=build_line_chart(daily),
         by_station=by_station,
     )
+
+
+@bp.route("/lang/<code>")
+def set_language(code):
+    """Интерфейс тілін ауыстырып, сол бетке қайтарады."""
+    if code in LANGUAGES:
+        session["lang"] = code
+    back = urlsplit(request.referrer or "")
+    if back.netloc == request.host and back.path.startswith("/"):
+        return redirect(back.path + (f"?{back.query}" if back.query else ""))
+    return redirect(url_for("main.index"))

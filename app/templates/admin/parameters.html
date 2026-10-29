@@ -1,37 +1,37 @@
 {% extends "base.html" %}
 {% from "_macros.html" import delete_button, param_icon %}
-{% block title %}Параметрлер{% endblock %}
+{% block title %}{{ _("Параметрлер") }}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <span class="eyebrow">🛡️ Әкімші</span>
-    <h1>Өлшенетін параметрлер</h1>
-    <p class="muted">Әр параметрдің өлшем бірлігі және рұқсат етілген мән диапазоны (форма валидациясында қолданылады).</p>
+    <span class="eyebrow">🛡️ {{ _("Әкімші") }}</span>
+    <h1>{{ _("Өлшенетін параметрлер") }}</h1>
+    <p class="muted">{{ _("Әр параметрдің өлшем бірлігі және рұқсат етілген мән диапазоны (форма валидациясында қолданылады).") }}</p>
   </div>
-  <a class="btn btn-primary" href="{{ url_for('admin.create_parameter') }}">＋ Жаңа параметр</a>
+  <a class="btn btn-primary" href="{{ url_for('admin.create_parameter') }}">＋ {{ _("Жаңа параметр") }}</a>
 </div>
 
 <section class="card">
   <div class="table-wrap"><table>
-    <thead><tr><th>Атауы</th><th>Коды</th><th>Бірлігі</th><th class="num">Диапазон</th><th class="num">Бақылаулар</th><th>Сипаттама</th><th></th></tr></thead>
+    <thead><tr><th>{{ _("Атауы") }}</th><th>{{ _("Коды") }}</th><th>{{ _("Бірлігі") }}</th><th class="num">{{ _("Диапазон") }}</th><th class="num">{{ _("Бақылаулар") }}</th><th>{{ _("Сипаттама") }}</th><th></th></tr></thead>
     <tbody>
     {% for p in parameters %}
       <tr>
-        <td><span class="cell-station">{{ param_icon(p.code) }}<b>{{ p.name }}</b></span></td>
+        <td><span class="cell-station">{{ param_icon(p.code) }}<b>{{ p.name|tr }}</b></span></td>
         <td class="mono">{{ p.code }}</td>
         <td>{{ p.unit }}</td>
         <td class="num nowrap">{{ '%g'|format(p.min_value) }} … {{ '%g'|format(p.max_value) }}</td>
         <td class="num">{{ counts.get(p.id, 0) }}</td>
-        <td class="small muted">{{ p.description or '' }}</td>
+        <td class="small muted">{{ (p.description or '')|tr }}</td>
         <td>
           <div class="actions">
-            <a href="{{ url_for('admin.edit_parameter', parameter_id=p.id) }}">Өңдеу</a>
-            {{ delete_button(url_for('admin.delete_parameter', parameter_id=p.id), 'Параметрді өшіресіз бе?') }}
+            <a href="{{ url_for('admin.edit_parameter', parameter_id=p.id) }}">{{ _("Өңдеу") }}</a>
+            {{ delete_button(url_for('admin.delete_parameter', parameter_id=p.id), _('Параметрді өшіресіз бе?')) }}
           </div>
         </td>
       </tr>
     {% else %}
-      <tr><td colspan="7" class="empty">Параметр жоқ.</td></tr>
+      <tr><td colspan="7" class="empty">{{ _("Параметр жоқ.") }}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>

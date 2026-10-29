@@ -6,17 +6,19 @@ from sqlalchemy import func, or_
 
 from .. import db
 from ..forms import ObservationForm
+from ..i18n import gettext as _
+from ..i18n import lazy_gettext as _l
 from ..models import Observation, Parameter, Station
 from ..services import apply_date_filter, parse_date
 from ..utils import DOCUMENT_EXTENSIONS, delete_upload, has_file, save_upload
 from . import bp
 
 SORTS = {
-    "date_desc": ((Observation.observed_at.desc(),), "Күні: жаңадан ескіге"),
-    "date_asc": ((Observation.observed_at.asc(),), "Күні: ескіден жаңаға"),
-    "value_desc": ((Observation.value.desc(),), "Мәні: үлкеннен кішіге"),
-    "value_asc": ((Observation.value.asc(),), "Мәні: кішіден үлкенге"),
-    "station": ((Station.name.asc(), Observation.observed_at.desc()), "Станция атауы"),
+    "date_desc": ((Observation.observed_at.desc(),), _l("Күні: жаңадан ескіге")),
+    "date_asc": ((Observation.observed_at.asc(),), _l("Күні: ескіден жаңаға")),
+    "value_desc": ((Observation.value.desc(),), _l("Мәні: үлкеннен кішіге")),
+    "value_asc": ((Observation.value.asc(),), _l("Мәні: кішіден үлкенге")),
+    "station": ((Station.name.asc(), Observation.observed_at.desc()), _l("Станция атауы")),
 }
 
 
@@ -118,7 +120,7 @@ def create():
         if _save_attachment(observation, form):
             db.session.add(observation)
             db.session.commit()
-            flash("Бақылау жазбасы қосылды.", "success")
+            flash(_("Бақылау жазбасы қосылды."), "success")
             return redirect(url_for("observations.detail", observation_id=observation.id))
     return render_template("observations/form.html", form=form, obs=None)
 
@@ -134,7 +136,7 @@ def edit(observation_id):
         _fill_observation(observation, form)
         if _save_attachment(observation, form):
             db.session.commit()
-            flash("Бақылау жазбасы жаңартылды.", "success")
+            flash(_("Бақылау жазбасы жаңартылды."), "success")
             return redirect(url_for("observations.detail", observation_id=observation.id))
         db.session.rollback()
     return render_template("observations/form.html", form=form, obs=observation)
@@ -150,5 +152,5 @@ def delete(observation_id):
     db.session.delete(observation)
     db.session.commit()
     delete_upload(attachment)
-    flash("Бақылау жазбасы өшірілді.", "info")
+    flash(_("Бақылау жазбасы өшірілді."), "info")
     return redirect(url_for("observations.list_observations"))

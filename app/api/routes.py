@@ -6,6 +6,7 @@ from flask import current_app, g, jsonify, request, url_for
 from sqlalchemy import or_
 
 from .. import db
+from ..i18n import gettext as _
 from ..models import Observation, Parameter, Station, User
 from ..services import apply_date_filter, check_observation, daily_averages, parameter_averages, parse_date
 from ..utils import delete_upload
@@ -28,7 +29,7 @@ def token_required(view):
             token = auth[len("Bearer "):]
         user = User.query.filter_by(api_token=token).first() if token else None
         if user is None:
-            return error(401, "API кілті жоқ немесе жарамсыз. «X-API-Key» тақырыбын жіберіңіз.")
+            return error(401, _("API кілті жоқ немесе жарамсыз. «X-API-Key» тақырыбын жіберіңіз."))
         g.api_user = user
         return view(*args, **kwargs)
 
@@ -65,27 +66,27 @@ def _validate_payload(data, observation=None):
         try:
             station = db.session.get(Station, int(data.get("station_id")))
         except (TypeError, ValueError):
-            errors["station_id"] = "station_id бүтін сан болуы керек."
+            errors["station_id"] = _("station_id бүтін сан болуы керек.")
     if "parameter_id" in data or "parameter" in data or not partial:
         parameter = _find_parameter(data.get("parameter_id", data.get("parameter")))
     if "value" in data or not partial:
         raw = data.get("value")
         if isinstance(raw, bool) or raw is None:
-            errors["value"] = "value — міндетті сандық өріс."
+            errors["value"] = _("value — міндетті сандық өріс.")
         else:
             try:
                 value = float(raw)
             except (TypeError, ValueError):
-                errors["value"] = "value сан болуы керек."
+                errors["value"] = _("value сан болуы керек.")
     if data.get("observed_at"):
         try:
             observed_at = _parse_datetime(data["observed_at"])
         except ValueError:
-            errors["observed_at"] = "observed_at ISO 8601 форматында болуы керек (мыс. 2026-10-30T14:00)."
+            errors["observed_at"] = _("observed_at ISO 8601 форматында болуы керек (мыс. 2026-10-30T14:00).")
     if "note" in data:
         note = (str(data["note"]).strip() if data["note"] is not None else "") or None
         if note and len(note) > 500:
-            errors["note"] = "note ең көбі 500 таңба."
+            errors["note"] = _("note ең көбі 500 таңба.")
 
     for field, message in check_observation(station, parameter, value, observed_at).items():
         errors.setdefault(field, message)
@@ -105,15 +106,15 @@ def index():
         {
             "name": "Weather Observation Log API",
             "endpoints": {
-                "GET /api/stations": "Станциялар тізімі (?q=, ?city=)",
-                "GET /api/stations/<id>": "Бір станция + параметрлері",
-                "GET /api/parameters": "Параметрлер тізімі",
-                "GET /api/observations": "Бақылаулар (?station_id, ?parameter, ?date_from, ?date_to, ?page, ?per_page)",
-                "GET /api/observations/<id>": "Бір бақылау",
-                "POST /api/observations": "Жаңа бақылау (X-API-Key керек)",
-                "PUT /api/observations/<id>": "Бақылауды өзгерту (X-API-Key, автор немесе admin)",
-                "DELETE /api/observations/<id>": "Бақылауды өшіру (X-API-Key, автор немесе admin)",
-                "GET /api/stats/averages": "Орташа мәндер (?station_id, ?parameter, ?date_from, ?date_to)",
+                "GET /api/stations": _("Станциялар тізімі (?q=, ?city=)"),
+                "GET /api/stations/<id>": _("Бір станция + параметрлері"),
+                "GET /api/parameters": _("Параметрлер тізімі"),
+                "GET /api/observations": _("Бақылаулар (?station_id, ?parameter, ?date_from, ?date_to, ?page, ?per_page)"),
+                "GET /api/observations/<id>": _("Бір бақылау"),
+                "POST /api/observations": _("Жаңа бақылау (X-API-Key керек)"),
+                "PUT /api/observations/<id>": _("Бақылауды өзгерту (X-API-Key, автор немесе admin)"),
+                "DELETE /api/observations/<id>": _("Бақылауды өшіру (X-API-Key, автор немесе admin)"),
+                "GET /api/stats/averages": _("Орташа мәндер (?station_id, ?parameter, ?date_from, ?date_to)"),
             },
         }
     )
@@ -150,11 +151,11 @@ def list_observations():
     if "parameter" in request.args or "parameter_id" in request.args:
         parameter = _find_parameter(request.args.get("parameter_id") or request.args.get("parameter"))
         if parameter is None:
-            return error(404, "Параметр табылмады.")
+            return error(404, _("Параметр табылмады."))
         query = query.filter(Observation.parameter_id == parameter.id)
     for name in ("date_from", "date_to"):
         if request.args.get(name) and parse_date(request.args.get(name)) is None:
-            return error(400, f"{name} форматы YYYY-MM-DD болуы керек.")
+            return error(400, _("{name} форматы YYYY-MM-DD болуы керек.", name=name))
     query = apply_date_filter(query, parse_date(request.args.get("date_from")), parse_date(request.args.get("date_to")))
 
     per_page = min(max(request.args.get("per_page", 20, type=int), 1), current_app.config["API_MAX_PER_PAGE"])
@@ -183,10 +184,10 @@ def get_observation(observation_id):
 def create_observation():
     data = _json_body()
     if data is None:
-        return error(400, "Сұраныс денесі JSON объект болуы керек.")
+        return error(400, _("Сұраныс денесі JSON объект болуы керек."))
     cleaned, errors = _validate_payload(data)
     if errors:
-        return error(422, "Деректер қате.", errors)
+        return error(422, _("Деректер қате."), errors)
     observation = Observation(
         station=cleaned["station"],
         parameter=cleaned["parameter"],
@@ -208,13 +209,13 @@ def create_observation():
 def update_observation(observation_id):
     observation = db.get_or_404(Observation, observation_id)
     if not observation.can_edit(g.api_user):
-        return error(403, "Бұл жазбаны тек авторы немесе admin өзгерте алады.")
+        return error(403, _("Бұл жазбаны тек авторы немесе admin өзгерте алады."))
     data = _json_body()
     if data is None:
-        return error(400, "Сұраныс денесі JSON объект болуы керек.")
+        return error(400, _("Сұраныс денесі JSON объект болуы керек."))
     cleaned, errors = _validate_payload(data, observation)
     if errors:
-        return error(422, "Деректер қате.", errors)
+        return error(422, _("Деректер қате."), errors)
     observation.station = cleaned["station"]
     observation.parameter = cleaned["parameter"]
     observation.value = cleaned["value"]
@@ -229,12 +230,12 @@ def update_observation(observation_id):
 def delete_observation(observation_id):
     observation = db.get_or_404(Observation, observation_id)
     if not observation.can_edit(g.api_user):
-        return error(403, "Бұл жазбаны тек авторы немесе admin өшіре алады.")
+        return error(403, _("Бұл жазбаны тек авторы немесе admin өшіре алады."))
     attachment = observation.attachment
     db.session.delete(observation)
     db.session.commit()
     delete_upload(attachment)
-    return jsonify({"message": "Бақылау өшірілді.", "id": observation_id})
+    return jsonify({"message": _("Бақылау өшірілді."), "id": observation_id})
 
 
 @bp.get("/stats/averages")
@@ -262,7 +263,7 @@ def averages():
     if "parameter" in request.args:
         parameter = _find_parameter(request.args["parameter"])
         if parameter is None:
-            return error(404, "Параметр табылмады.")
+            return error(404, _("Параметр табылмады."))
         result["daily"] = [
             {"date": d["date"].isoformat(), "avg": round(d["avg"], 2), "min": d["min"], "max": d["max"], "count": d["count"]}
             for d in daily_averages(parameter.id, station_id, date_from, date_to)

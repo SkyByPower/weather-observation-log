@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% from "_macros.html" import field %}
-{% block title %}{{ 'Станцияны өңдеу' if station else 'Жаңа станция' }}{% endblock %}
+{% block title %}{{ _("Станцияны өңдеу") if station else _("Жаңа станция") }}{% endblock %}
 {% block content %}
 <div class="card form-card">
-  {% if station %}<a class="back-link" href="{{ url_for('stations.detail', station_id=station.id) }}">← {{ station.name }}</a>
-    {% else %}<a class="back-link" href="{{ url_for('stations.list_stations') }}">← Станциялар</a>{% endif %}
-  <h1>{{ 'Станцияны өңдеу' if station else 'Жаңа станция' }}</h1>
+  {% if station %}<a class="back-link" href="{{ url_for('stations.detail', station_id=station.id) }}">← {{ station.name|tr }}</a>
+  {% else %}<a class="back-link" href="{{ url_for('stations.list_stations') }}">← {{ _("Станциялар") }}</a>{% endif %}
+  <h1>{{ _("Станцияны өңдеу") if station else _("Жаңа станция") }}</h1>
   <form method="post" enctype="multipart/form-data" novalidate>
     {{ form.hidden_tag() }}
     <div class="form-row">
-      {{ field(form.name, placeholder="Алматы метеостанциясы") }}
+      {{ field(form.name, placeholder=_("Алматы метеостанциясы")) }}
       {{ field(form.code, placeholder="ALA-01") }}
     </div>
-    {{ field(form.city, placeholder="Алматы") }}
+    {{ field(form.city, placeholder=_("Алматы")) }}
     <div class="form-row">
       {{ field(form.latitude, placeholder="43.2389", inputmode="decimal") }}
       {{ field(form.longitude, placeholder="76.8897", inputmode="decimal") }}
@@ -23,15 +23,15 @@
       {{ field(form.email, placeholder="station@example.kz", type="email") }}
     </div>
     {{ field(form.description, rows=3) }}
-    {{ field(form.parameter_ids, help="Ешқайсысы белгіленбесе — барлық параметр рұқсат.") }}
+    {{ field(form.parameter_ids, help=_("Ешқайсысы белгіленбесе — барлық параметр рұқсат.")) }}
     {% if station and station.photo %}
-      <p class="small muted">Қазіргі фото: <a href="{{ url_for('static', filename='uploads/' ~ station.photo) }}" target="_blank">ашу</a>. Жаңасын жүктесеңіз, ауыстырылады.</p>
+      <p class="small muted">{{ _("Қазіргі фото") }}: <a href="{{ url_for('static', filename='uploads/' ~ station.photo) }}" target="_blank">{{ _("ашу") }}</a>. {{ _("Жаңасын жүктесеңіз, ауыстырылады.") }}</p>
     {% endif %}
     {{ field(form.photo_file, accept=".png,.jpg,.jpeg,.gif,.webp") }}
     {{ field(form.is_active) }}
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit">Сақтау</button>
-      <a class="btn btn-ghost" href="{{ url_for('stations.detail', station_id=station.id) if station else url_for('stations.list_stations') }}">Болдырмау</a>
+      <button class="btn btn-primary" type="submit">{{ _("Сақтау") }}</button>
+      <a class="btn btn-ghost" href="{{ url_for('stations.detail', station_id=station.id) if station else url_for('stations.list_stations') }}">{{ _("Болдырмау") }}</a>
     </div>
   </form>
 </div>

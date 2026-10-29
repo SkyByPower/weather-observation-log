@@ -1,36 +1,35 @@
 {% extends "base.html" %}
 {% from "_macros.html" import obs_value, wx, sky, param_icon %}
-{% block title %}Басты бет{% endblock %}
+{% block title %}{{ _("Басты бет") }}{% endblock %}
 {% block content %}
 <section class="hero">
   {{ sky() }}
   <div class="hero-content">
     <div>
       <span class="eyebrow">⛅ Weather Observation Log</span>
-      <h1>Ауа райын <span class="grad-text">бақылаңыз</span>,<br>деректерді талдаңыз</h1>
-      <p>Метеостанциялардың температура, ылғалдылық, қысым, жел және жауын-шашын бақылауларын тіркеңіз,
-         күн бойынша сүзіп, орташа мәндерді салыстырыңыз.</p>
+      <h1>{{ _("Ауа райын") }} <span class="grad-text">{{ _("бақылаңыз") }}</span>,<br>{{ _("деректерді талдаңыз") }}</h1>
+      <p>{{ _("Метеостанциялардың температура, ылғалдылық, қысым, жел және жауын-шашын бақылауларын тіркеңіз, күн бойынша сүзіп, орташа мәндерді салыстырыңыз.") }}</p>
       <div class="hero-actions">
         {% if current_user.is_authenticated %}
-          <a class="btn btn-primary" href="{{ url_for('observations.create') }}">＋ Бақылау қосу</a>
+          <a class="btn btn-primary" href="{{ url_for('observations.create') }}">＋ {{ _("Бақылау қосу") }}</a>
         {% else %}
-          <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Тегін тіркелу →</a>
+          <a class="btn btn-primary" href="{{ url_for('auth.register') }}">{{ _("Тегін тіркелу") }} →</a>
         {% endif %}
-        <a class="btn btn-glass" href="{{ url_for('main.stats') }}">📈 Орташа мәндер</a>
+        <a class="btn btn-glass" href="{{ url_for('main.stats') }}">📈 {{ _("Орташа мәндер") }}</a>
       </div>
     </div>
 
     {% if now_stations %}
     <div class="now-card glass">
       <div class="now-head">
-        <div><div>Қазір станцияларда</div><div class="date" data-date></div></div>
+        <div><div>{{ _("Қазір станцияларда") }}</div><div class="date" data-date></div></div>
         <span class="clock" data-clock>--:--</span>
       </div>
       {% for s, c in now_stations %}
         <a class="now-row" href="{{ url_for('stations.detail', station_id=s.id) }}">
           {{ wx(c.kind, 48) }}
           <div style="min-width:0">
-            <div class="name">{{ s.city }}</div>
+            <div class="name">{{ s.city|tr }}</div>
             <div class="cond">{{ c.label }} · {{ c.observed_at|dt('%d.%m %H:%M') }}</div>
           </div>
           <div class="temp">{% if c.temp is not none %}{{ '%+.0f'|format(c.temp) }}°{% else %}—{% endif %}</div>
@@ -43,82 +42,82 @@
 
 <div class="grid grid-4">
   <div class="tile hoverable">
-    <div class="tile-head"><span class="tile-label">Белсенді станциялар</span><span class="t-icon">📡</span></div>
+    <div class="tile-head"><span class="tile-label">{{ _("Белсенді станциялар") }}</span><span class="t-icon">📡</span></div>
     <div class="tile-value" data-count="{{ counts.stations }}">{{ counts.stations }}</div>
   </div>
   <div class="tile hoverable" style="--glow: rgba(0,180,216,.18)">
-    <div class="tile-head"><span class="tile-label">Бақылаулар</span><span class="t-icon" style="--icon-bg: rgba(0,180,216,.14)">📝</span></div>
+    <div class="tile-head"><span class="tile-label">{{ _("Бақылаулар") }}</span><span class="t-icon" style="--icon-bg: rgba(0,180,216,.14)">📝</span></div>
     <div class="tile-value" data-count="{{ counts.observations }}">{{ counts.observations }}</div>
   </div>
   <div class="tile hoverable" style="--glow: rgba(124,92,255,.18)">
-    <div class="tile-head"><span class="tile-label">Параметрлер</span><span class="t-icon" style="--icon-bg: rgba(124,92,255,.14)">🎛️</span></div>
+    <div class="tile-head"><span class="tile-label">{{ _("Параметрлер") }}</span><span class="t-icon" style="--icon-bg: rgba(124,92,255,.14)">🎛️</span></div>
     <div class="tile-value" data-count="{{ counts.parameters }}">{{ counts.parameters }}</div>
   </div>
   <div class="tile hoverable" style="--glow: rgba(255,159,28,.2)">
-    <div class="tile-head"><span class="tile-label">Пайдаланушылар</span><span class="t-icon" style="--icon-bg: rgba(255,159,28,.15)">👥</span></div>
+    <div class="tile-head"><span class="tile-label">{{ _("Пайдаланушылар") }}</span><span class="t-icon" style="--icon-bg: rgba(255,159,28,.15)">👥</span></div>
     <div class="tile-value" data-count="{{ counts.users }}">{{ counts.users }}</div>
   </div>
 </div>
 
-<div class="section-title"><h2>Соңғы 7 күндегі орташа мәндер</h2><span class="muted small">барлық станция бойынша</span></div>
+<div class="section-title"><h2>{{ _("Соңғы 7 күндегі орташа мәндер") }}</h2><span class="muted small">{{ _("барлық станция бойынша") }}</span></div>
 {% if week_averages %}
 <div class="grid grid-auto">
   {% for a in week_averages %}
     <a class="tile avg-tile p-{{ a.code }}" style="background: var(--surface)" href="{{ url_for('main.stats', parameter_id=a.id) }}">
-      <div class="tile-head"><span class="tile-label">{{ a.name }}</span>{{ param_icon(a.code) }}</div>
+      <div class="tile-head"><span class="tile-label">{{ a.name|tr }}</span>{{ param_icon(a.code) }}</div>
       <div class="tile-value"><span data-count="{{ '%.1f'|format(a.avg) }}" data-decimals="1">{{ a.avg|num }}</span> <span class="unit">{{ a.unit }}</span></div>
-      <div class="tile-sub">мин {{ a.min|num }} · макс {{ a.max|num }} · {{ a.count }} өлшем</div>
+      <div class="tile-sub">{{ _("мин {min} · макс {max} · {count} өлшем", min=a.min|num, max=a.max|num, count=a.count) }}</div>
       {% set span = (a.max - a.min) or 1 %}
       <div class="mini-bar"><span style="width: {{ (8 + 92 * (a.avg - a.min) / span)|round(1) }}%"></span></div>
     </a>
   {% endfor %}
 </div>
 {% else %}
-  <div class="card empty">Соңғы аптада бақылау жоқ.</div>
+  <div class="card empty">{{ _("Соңғы аптада бақылау жоқ.") }}</div>
 {% endif %}
 
 <div class="grid grid-main" style="margin-top:30px">
   <section class="card">
     <div class="card-title">
-      <h2>🕒 Соңғы бақылаулар</h2>
-      <a href="{{ url_for('observations.list_observations') }}">Барлығы →</a>
+      <h2>🕒 {{ _("Соңғы бақылаулар") }}</h2>
+      <a href="{{ url_for('observations.list_observations') }}">{{ _("Барлығы") }} →</a>
     </div>
     {% if latest %}
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Уақыты</th><th>Станция</th><th>Параметр</th><th class="num">Мәні</th></tr></thead>
+        <thead><tr><th>{{ _("Уақыты") }}</th><th>{{ _("Станция") }}</th><th>{{ _("Параметр") }}</th><th class="num">{{ _("Мәні") }}</th></tr></thead>
         <tbody>
         {% for o in latest %}
           <tr>
             <td class="nowrap"><a href="{{ url_for('observations.detail', observation_id=o.id) }}">{{ o.observed_at|dt }}</a></td>
-            <td>{{ o.station.name }}</td>
-            <td><span class="cell-station">{{ param_icon(o.parameter.code) }} {{ o.parameter.name }}</span></td>
+            <td>{{ o.station.name|tr }}</td>
+            <td><span class="cell-station">{{ param_icon(o.parameter.code) }} {{ o.parameter.name|tr }}</span></td>
             <td class="num nowrap">{{ obs_value(o) }}</td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
     </div>
-    {% else %}<div class="empty">Әзірге бақылау жоқ.</div>{% endif %}
+    {% else %}<div class="empty">{{ _("Әзірге бақылау жоқ.") }}</div>{% endif %}
   </section>
 
   <section class="card">
     <div class="card-title">
-      <h2>📡 Станциялар</h2>
-      <a href="{{ url_for('stations.list_stations') }}">Барлығы →</a>
+      <h2>📡 {{ _("Станциялар") }}</h2>
+      <a href="{{ url_for('stations.list_stations') }}">{{ _("Барлығы") }} →</a>
     </div>
     {% for s in stations %}
       {% set c = conditions.get(s.id) %}
       <a class="list-row" href="{{ url_for('stations.detail', station_id=s.id) }}">
         {{ wx(c.kind if c else 'cloud', 40) }}
         <div class="grow">
-          <b>{{ s.name }}</b>
-          <div class="muted small">{{ s.city }} · {{ c.label if c else 'дерек жоқ' }}</div>
+          <b>{{ s.name|tr }}</b>
+          <div class="muted small">{{ s.city|tr }} · {{ c.label if c else _("дерек жоқ") }}</div>
         </div>
         <span class="t">{% if c and c.temp is not none %}{{ '%+.0f'|format(c.temp) }}°{% endif %}</span>
       </a>
     {% else %}
-      <div class="empty">Станция жоқ.</div>
+      <div class="empty">{{ _("Станция жоқ.") }}</div>
     {% endfor %}
   </section>
 </div>

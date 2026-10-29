@@ -5,17 +5,19 @@ from sqlalchemy import func, or_
 
 from .. import db
 from ..forms import StationForm
+from ..i18n import gettext as _
+from ..i18n import lazy_gettext as _l
 from ..models import Observation, Parameter, Station
 from ..services import latest_conditions, parameter_averages
 from ..utils import IMAGE_EXTENSIONS, admin_required, delete_upload, has_file, save_upload
 from . import bp
 
 SORTS = {
-    "name": (Station.name.asc(), "Атауы (А–Я)"),
-    "-name": (Station.name.desc(), "Атауы (Я–А)"),
-    "city": (Station.city.asc(), "Қала бойынша"),
-    "-elevation": (Station.elevation.desc(), "Биіктігі (жоғарыдан)"),
-    "newest": (Station.created_at.desc(), "Жаңалары алдымен"),
+    "name": (Station.name.asc(), _l("Атауы (А–Я)")),
+    "-name": (Station.name.desc(), _l("Атауы (Я–А)")),
+    "city": (Station.city.asc(), _l("Қала бойынша")),
+    "-elevation": (Station.elevation.desc(), _l("Биіктігі (жоғарыдан)")),
+    "newest": (Station.created_at.desc(), _l("Жаңалары алдымен")),
 }
 
 
@@ -111,7 +113,7 @@ def create():
         if _save_photo(station, form):
             db.session.add(station)
             db.session.commit()
-            flash(f"«{station.name}» станциясы қосылды.", "success")
+            flash(_("«{name}» станциясы қосылды.", name=station.name), "success")
             return redirect(url_for("stations.detail", station_id=station.id))
     return render_template("stations/form.html", form=form, station=None)
 
@@ -127,7 +129,7 @@ def edit(station_id):
         _fill_station(station, form)
         if _save_photo(station, form):
             db.session.commit()
-            flash("Станция мәліметтері жаңартылды.", "success")
+            flash(_("Станция мәліметтері жаңартылды."), "success")
             return redirect(url_for("stations.detail", station_id=station.id))
         db.session.rollback()
     return render_template("stations/form.html", form=form, station=station)
@@ -143,5 +145,5 @@ def delete(station_id):
     db.session.commit()
     for path in [photo, *attachments]:
         delete_upload(path)
-    flash(f"«{name}» станциясы және оның бақылаулары өшірілді.", "info")
+    flash(_("«{name}» станциясы және оның бақылаулары өшірілді.", name=name), "info")
     return redirect(url_for("stations.list_stations"))

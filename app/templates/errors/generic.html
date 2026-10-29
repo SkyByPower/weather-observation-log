@@ -8,12 +8,12 @@
     <div class="code">{{ code }}</div>
     <h1>{{ '🔒 ' if code == 403 }}{{ message }}</h1>
     <p>
-      {% if code == 403 %}Бұл әрекетке тек әкімші (admin) немесе жазба авторы рұқсат ала алады.
-      {% elif code == 413 %}Жүктелетін файл {{ (config.MAX_CONTENT_LENGTH / 1024 / 1024)|round|int }} МБ-тан аспауы керек.
-      {% else %}Сұранысты өңдеу мүмкін болмады. Бетті жаңартып, қайталап көріңіз.{% endif %}
+      {% if code == 403 %}{{ _("Бұл әрекетке тек әкімші (admin) немесе жазба авторы рұқсат ала алады.") }}
+      {% elif code == 413 %}{{ _("Жүктелетін файл {size} МБ-тан аспауы керек.", size=(config.MAX_CONTENT_LENGTH / 1024 / 1024)|round|int) }}
+      {% else %}{{ _("Сұранысты өңдеу мүмкін болмады. Бетті жаңартып, қайталап көріңіз.") }}{% endif %}
     </p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="{{ url_for('main.index') }}">🏠 Басты бетке</a>
+      <a class="btn btn-primary" href="{{ url_for('main.index') }}">🏠 {{ _("Басты бетке") }}</a>
     </div>
   </div>
 </div>

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="kk">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Басты бет{% endblock %} · Ауа райы бақылау журналы</title>
+  <title>{% block title %}{{ _("Басты бет") }}{% endblock %} · {{ _("Ауа райы бақылау журналы") }}</title>
   <script>
     (function () {
       var t = null;
@@ -25,21 +25,27 @@
   <div class="container nav">
     <a class="brand" href="{{ url_for('main.index') }}">
       {{ wx('partly', 38) }}
-      <span>Weather Log<small>ауа райы журналы</small></span>
+      <span>Weather Log<small>{{ _("ауа райы журналы") }}</small></span>
     </a>
     <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="nav-burger" aria-label="Мәзір">☰</label>
+    <label for="nav-toggle" class="nav-burger" aria-label="{{ _('Мәзір') }}">☰</label>
     <nav class="nav-links">
-      <a href="{{ url_for('stations.list_stations') }}" class="{{ 'active' if request.blueprint == 'stations' }}">Станциялар</a>
-      <a href="{{ url_for('observations.list_observations') }}" class="{{ 'active' if request.blueprint == 'observations' }}">Бақылаулар</a>
-      <a href="{{ url_for('main.stats') }}" class="{{ 'active' if request.endpoint == 'main.stats' }}">Орташа мәндер</a>
+      <a href="{{ url_for('stations.list_stations') }}" class="{{ 'active' if request.blueprint == 'stations' }}">{{ _("Станциялар") }}</a>
+      <a href="{{ url_for('observations.list_observations') }}" class="{{ 'active' if request.blueprint == 'observations' }}">{{ _("Бақылаулар") }}</a>
+      <a href="{{ url_for('main.stats') }}" class="{{ 'active' if request.endpoint == 'main.stats' }}">{{ _("Орташа мәндер") }}</a>
       {% if current_user.is_authenticated and current_user.is_admin %}
-        <a href="{{ url_for('admin.parameters') }}" class="{{ 'active' if request.endpoint and 'parameter' in request.endpoint }}">Параметрлер</a>
-        <a href="{{ url_for('admin.users') }}" class="{{ 'active' if request.endpoint and 'user' in request.endpoint }}">Пайдаланушылар</a>
+        <a href="{{ url_for('admin.parameters') }}" class="{{ 'active' if request.endpoint and 'parameter' in request.endpoint }}">{{ _("Параметрлер") }}</a>
+        <a href="{{ url_for('admin.users') }}" class="{{ 'active' if request.endpoint and 'user' in request.endpoint }}">{{ _("Пайдаланушылар") }}</a>
       {% endif %}
     </nav>
     <div class="nav-user">
-      <button class="theme-toggle" type="button" data-theme-toggle title="Тақырыпты ауыстыру" aria-label="Тақырыпты ауыстыру">
+      <div class="lang-switch" role="group" aria-label="{{ _('Тіл') }}">
+        {% for code in LANGUAGES %}
+          <a href="{{ url_for('main.set_language', code=code) }}" class="{{ 'active' if get_locale() == code }}"
+             title="{{ LANGUAGES[code] }}" lang="{{ code }}">{{ 'ҚАЗ' if code == 'kk' else 'РУС' }}</a>
+        {% endfor %}
+      </div>
+      <button class="theme-toggle" type="button" data-theme-toggle title="{{ _('Тақырыпты ауыстыру') }}" aria-label="{{ _('Тақырыпты ауыстыру') }}">
         <span class="sun">☀️</span><span class="moon">🌙</span>
       </button>
       {% if current_user.is_authenticated %}
@@ -49,11 +55,11 @@
         </a>
         <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-ghost btn-sm" type="submit">Шығу</button>
+          <button class="btn btn-ghost btn-sm" type="submit">{{ _("Шығу") }}</button>
         </form>
       {% else %}
-        <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.login') }}">Кіру</a>
-        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Тіркелу</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.login') }}">{{ _("Кіру") }}</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">{{ _("Тіркелу") }}</a>
       {% endif %}
     </div>
   </div>

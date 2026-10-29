@@ -8,17 +8,19 @@ from flask_wtf import CSRFProtect
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
+from .i18n import LANGUAGES, get_locale, gettext, lazy_gettext as _l, translate_data
+
 db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
 ERROR_MESSAGES = {
-    400: "Қате сұраныс",
-    403: "Қолжетімділік жоқ",
-    404: "Бет табылмады",
-    405: "Бұл әдіске рұқсат жоқ",
-    413: "Файл тым үлкен",
-    500: "Сервердің ішкі қатесі",
+    400: _l("Қате сұраныс"),
+    403: _l("Қолжетімділік жоқ"),
+    404: _l("Бет табылмады"),
+    405: _l("Бұл әдіске рұқсат жоқ"),
+    413: _l("Файл тым үлкен"),
+    500: _l("Сервердің ішкі қатесі"),
 }
 
 
@@ -49,7 +51,8 @@ def create_app(config_class="config.Config"):
     csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
-    login_manager.login_message = "Бұл бетті ашу үшін жүйеге кіріңіз."
+    login_manager.login_message = _l("Бұл бетті ашу үшін жүйеге кіріңіз.")
+    login_manager.localize_callback = gettext
     login_manager.login_message_category = "warning"
 
     from .admin import bp as admin_bp
@@ -78,15 +81,18 @@ def register_error_handlers(app):
         if code == 500:
             db.session.rollback()
         if request.path.startswith("/api/"):
-            return jsonify(error=ERROR_MESSAGES[code], status=code), code
+            return jsonify(error=str(ERROR_MESSAGES[code]), status=code), code
         template = f"errors/{code}.html" if code in (404, 500) else "errors/generic.html"
-        return render_template(template, code=code, message=ERROR_MESSAGES[code]), code
+        return render_template(template, code=code, message=str(ERROR_MESSAGES[code])), code
 
     for code in ERROR_MESSAGES:
         app.register_error_handler(code, lambda _e, c=code: render_error(c))
 
 
 def register_template_helpers(app):
+    app.jinja_env.globals.update(_=gettext, get_locale=get_locale, LANGUAGES=LANGUAGES)
+    app.jinja_env.filters["tr"] = translate_data
+
     @app.template_global()
     def url_with_args(**updates):
         """Ағымдағы URL-ді сақтап, тек көрсетілген параметрлерді (мыс. page) ауыстырады."""

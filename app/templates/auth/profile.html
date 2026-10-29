@@ -1,27 +1,28 @@
 {% extends "base.html" %}
-{% from "_macros.html" import obs_value %}
-{% block title %}Профиль{% endblock %}
+{% from "_macros.html" import obs_value, param_icon %}
+{% block title %}{{ _("Профиль") }}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>👤 {{ current_user.username }}</h1>
+    <span class="eyebrow">👤 {{ _("Профиль") }}</span>
+    <h1>{{ current_user.username }}</h1>
     <p class="muted">{{ current_user.email }} · <span class="badge role-{{ current_user.role }}">{{ current_user.role }}</span>
-      · тіркелген күні {{ current_user.created_at|dt('%d.%m.%Y') }}</p>
+      · {{ _("тіркелген күні") }} {{ current_user.created_at|dt('%d.%m.%Y') }}</p>
   </div>
-  <a class="btn btn-ghost" href="{{ url_for('observations.list_observations', mine=1) }}">Менің бақылауларым ({{ total }})</a>
+  <a class="btn btn-ghost" href="{{ url_for('observations.list_observations', mine=1) }}">{{ _("Менің бақылауларым") }} ({{ total }})</a>
 </div>
 
 <div class="grid grid-2">
   <section class="card">
-    <h2>API кілті</h2>
-    <p class="muted small">POST / PUT / DELETE сұраныстары үшін <span class="mono">X-API-Key</span> тақырыбында жіберіңіз. Кілтті ешкімге бермеңіз.</p>
+    <h2>🔑 {{ _("API кілті") }}</h2>
+    <p class="muted small">{{ _("POST / PUT / DELETE сұраныстары үшін X-API-Key тақырыбында жіберіңіз. Кілтті ешкімге бермеңіз.") }}</p>
     <div class="token mono">{{ current_user.api_token }}</div>
     <form method="post" action="{{ url_for('auth.regenerate_token') }}" style="margin-top:12px"
-          onsubmit="return confirm('Ескі кілт жарамсыз болады. Жалғастырасыз ба?');">
+          onsubmit="return confirm('{{ _("Ескі кілт жарамсыз болады. Жалғастырасыз ба?") }}');">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn btn-ghost btn-sm" type="submit">🔄 Жаңа кілт жасау</button>
+      <button class="btn btn-ghost btn-sm" type="submit">🔄 {{ _("Жаңа кілт жасау") }}</button>
     </form>
-    <h3 style="margin-top:18px">Мысал</h3>
+    <h3 style="margin-top:18px">{{ _("Мысал") }}</h3>
 <pre class="code">curl -X POST {{ url_for('api.create_observation', _external=True) }} \
   -H "Content-Type: application/json" \
   -H "X-API-Key: {{ current_user.api_token }}" \
@@ -29,22 +30,22 @@
   </section>
 
   <section class="card">
-    <h2>Соңғы жазбаларым</h2>
+    <h2>🕒 {{ _("Соңғы жазбаларым") }}</h2>
     {% if recent %}
     <div class="table-wrap"><table>
-      <thead><tr><th>Уақыты</th><th>Станция</th><th class="num">Мәні</th></tr></thead>
+      <thead><tr><th>{{ _("Уақыты") }}</th><th>{{ _("Станция") }}</th><th class="num">{{ _("Мәні") }}</th></tr></thead>
       <tbody>
       {% for o in recent %}
         <tr>
           <td class="nowrap"><a href="{{ url_for('observations.detail', observation_id=o.id) }}">{{ o.observed_at|dt }}</a></td>
-          <td>{{ o.station.name }}<div class="muted small">{{ o.parameter.name }}</div></td>
+          <td>{{ o.station.name|tr }}<div class="muted small">{{ o.parameter.name|tr }}</div></td>
           <td class="num nowrap">{{ obs_value(o) }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table></div>
     {% else %}
-      <div class="empty">Сіз әлі бақылау қоспадыңыз. <a href="{{ url_for('observations.create') }}">Бірінші жазбаны қосу</a></div>
+      <div class="empty">{{ _("Сіз әлі бақылау қоспадыңыз.") }} <a href="{{ url_for('observations.create') }}">{{ _("Бірінші жазбаны қосу") }}</a></div>
     {% endif %}
   </section>
 </div>

@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% from "_macros.html" import sky %}
-{% block title %}500 — Сервер қатесі{% endblock %}
+{% block title %}{{ _("500 — Сервер қатесі") }}{% endblock %}
 {% block content %}
 <div class="error-scene">
   {{ sky('storm', clouds=5) }}
   <div class="inner">
     <div class="code">500</div>
-    <h1>Серверде дауыл басталды</h1>
-    <p>Сервердің ішкі қатесі орын алды. Біз оны жақын арада түзетеміз — бірнеше минуттан кейін қайталап көріңіз.</p>
+    <h1>{{ _("Серверде дауыл басталды") }}</h1>
+    <p>{{ _("Сервердің ішкі қатесі орын алды. Біз оны жақын арада түзетеміз — бірнеше минуттан кейін қайталап көріңіз.") }}</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="{{ url_for('main.index') }}">🏠 Басты бетке</a>
+      <a class="btn btn-primary" href="{{ url_for('main.index') }}">🏠 {{ _("Басты бетке") }}</a>
     </div>
   </div>
 </div>

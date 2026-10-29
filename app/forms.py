@@ -28,11 +28,16 @@ from wtforms.validators import (
 from wtforms.widgets import CheckboxInput, ListWidget, TextInput
 
 from . import db
+from .i18n import gettext as _
+from .i18n import lazy_gettext as _l
+from .i18n import translate_data
 from .models import Parameter, Station, User
 from .services import check_observation
 from .utils import DOCUMENT_EXTENSIONS, IMAGE_EXTENSIONS
 
-REQUIRED = "Бұл өріс міндетті."
+REQUIRED = _l("Бұл өріс міндетті.")
+LENGTH_MSG = _l("Ұзындығы %(min)d–%(max)d таңба болуы керек.")
+MAX_LENGTH_MSG = _l("Ең көбі %(max)d таңба.")
 PHONE_RE = r"^\+?[0-9][0-9\s\-()]{6,19}$"
 
 
@@ -49,7 +54,7 @@ class DecimalCommaFloatField(FloatField):
             self.data = float(valuelist[0].strip().replace(",", "."))
         except ValueError:
             self.data = None
-            raise ValueError("Сан енгізіңіз.")
+            raise ValueError(_l("Сан енгізіңіз."))
 
 
 class MultiCheckboxField(SelectMultipleField):
@@ -58,84 +63,84 @@ class MultiCheckboxField(SelectMultipleField):
 
 
 class LoginForm(FlaskForm):
-    username = StringField("Пайдаланушы аты", validators=[DataRequired(REQUIRED), Length(max=30)])
-    password = PasswordField("Құпиясөз", validators=[DataRequired(REQUIRED)])
-    remember = BooleanField("Мені есте сақта")
-    submit = SubmitField("Кіру")
+    username = StringField(_l("Пайдаланушы аты"), validators=[DataRequired(REQUIRED), Length(max=30, message=MAX_LENGTH_MSG)])
+    password = PasswordField(_l("Құпиясөз"), validators=[DataRequired(REQUIRED)])
+    remember = BooleanField(_l("Мені есте сақта"))
+    submit = SubmitField(_l("Кіру"))
 
 
 class RegisterForm(FlaskForm):
     username = StringField(
-        "Пайдаланушы аты",
+        _l("Пайдаланушы аты"),
         validators=[
             DataRequired(REQUIRED),
-            Length(3, 30, message="Ұзындығы 3–30 таңба болуы керек."),
-            Regexp(r"^[A-Za-z0-9_.]+$", message="Тек латын әріптері, сандар, «_» және «.» рұқсат."),
+            Length(3, 30, message=_l("Ұзындығы 3–30 таңба болуы керек.")),
+            Regexp(r"^[A-Za-z0-9_.]+$", message=_l("Тек латын әріптері, сандар, «_» және «.» рұқсат.")),
         ],
     )
     email = StringField(
         "Email",
-        validators=[DataRequired(REQUIRED), Email(message="Email адресі дұрыс емес."), Length(max=120)],
+        validators=[DataRequired(REQUIRED), Email(message=_l("Email адресі дұрыс емес.")), Length(max=120, message=MAX_LENGTH_MSG)],
     )
     password = PasswordField(
-        "Құпиясөз",
-        validators=[DataRequired(REQUIRED), Length(6, 128, message="Құпиясөз кемінде 6 таңба болуы керек.")],
+        _l("Құпиясөз"),
+        validators=[DataRequired(REQUIRED), Length(6, 128, message=_l("Құпиясөз кемінде 6 таңба болуы керек."))],
     )
     confirm = PasswordField(
-        "Құпиясөзді қайталаңыз",
-        validators=[DataRequired(REQUIRED), EqualTo("password", message="Құпиясөздер сәйкес емес.")],
+        _l("Құпиясөзді қайталаңыз"),
+        validators=[DataRequired(REQUIRED), EqualTo("password", message=_l("Құпиясөздер сәйкес емес."))],
     )
-    submit = SubmitField("Тіркелу")
+    submit = SubmitField(_l("Тіркелу"))
 
     def validate_username(self, field):
         if User.query.filter(func.lower(User.username) == field.data.strip().lower()).first():
-            raise ValidationError("Бұл атпен пайдаланушы бұрыннан бар.")
+            raise ValidationError(_l("Бұл атпен пайдаланушы бұрыннан бар."))
 
     def validate_email(self, field):
         if User.query.filter(func.lower(User.email) == field.data.strip().lower()).first():
-            raise ValidationError("Бұл email бұрыннан тіркелген.")
+            raise ValidationError(_l("Бұл email бұрыннан тіркелген."))
 
 
 class StationForm(FlaskForm):
-    name = StringField("Атауы", validators=[DataRequired(REQUIRED), Length(2, 100)])
+    name = StringField(_l("Атауы"), validators=[DataRequired(REQUIRED), Length(2, 100, message=LENGTH_MSG)])
     code = StringField(
-        "Коды",
+        _l("Коды"),
         validators=[
             DataRequired(REQUIRED),
-            Length(2, 20),
-            Regexp(r"^[A-Z0-9-]+$", message="Тек бас латын әріптері, сандар және «-» (мыс. ALA-01)."),
+            Length(2, 20, message=LENGTH_MSG),
+            Regexp(r"^[A-Z0-9-]+$", message=_l("Тек бас латын әріптері, сандар және «-» (мыс. ALA-01).")),
         ],
     )
-    city = StringField("Қала / өңір", validators=[DataRequired(REQUIRED), Length(2, 100)])
+    city = StringField(_l("Қала / өңір"), validators=[DataRequired(REQUIRED), Length(2, 100, message=LENGTH_MSG)])
     latitude = DecimalCommaFloatField(
-        "Ендік", validators=[InputRequired(REQUIRED), NumberRange(-90, 90, "Ендік −90…90 аралығында болуы керек.")]
+        _l("Ендік"), validators=[InputRequired(REQUIRED), NumberRange(-90, 90, _l("Ендік −90…90 аралығында болуы керек."))]
     )
     longitude = DecimalCommaFloatField(
-        "Бойлық",
-        validators=[InputRequired(REQUIRED), NumberRange(-180, 180, "Бойлық −180…180 аралығында болуы керек.")],
+        _l("Бойлық"),
+        validators=[InputRequired(REQUIRED), NumberRange(-180, 180, _l("Бойлық −180…180 аралығында болуы керек."))],
     )
     elevation = DecimalCommaFloatField(
-        "Биіктік (м)", validators=[Optional(), NumberRange(-500, 9000, "Биіктік −500…9000 м аралығында болуы керек.")]
+        _l("Биіктік (м)"), validators=[Optional(), NumberRange(-500, 9000, _l("Биіктік −500…9000 м аралығында болуы керек."))]
     )
     phone = StringField(
-        "Телефон",
-        validators=[Optional(), Regexp(PHONE_RE, message="Телефон форматы дұрыс емес (мыс. +7 727 123 45 67).")],
+        _l("Телефон"),
+        validators=[Optional(), Regexp(PHONE_RE, message=_l("Телефон форматы дұрыс емес (мыс. +7 727 123 45 67)."))],
     )
-    email = StringField("Email", validators=[Optional(), Email(message="Email адресі дұрыс емес."), Length(max=120)])
-    description = TextAreaField("Сипаттама", validators=[Optional(), Length(max=1000)])
-    parameter_ids = MultiCheckboxField("Өлшенетін параметрлер", coerce=int)
-    is_active = BooleanField("Белсенді станция", default=True)
+    email = StringField("Email", validators=[Optional(), Email(message=_l("Email адресі дұрыс емес.")), Length(max=120, message=MAX_LENGTH_MSG)])
+    description = TextAreaField(_l("Сипаттама"), validators=[Optional(), Length(max=1000, message=MAX_LENGTH_MSG)])
+    parameter_ids = MultiCheckboxField(_l("Өлшенетін параметрлер"), coerce=int)
+    is_active = BooleanField(_l("Белсенді станция"), default=True)
     photo_file = FileField(
-        "Фото (PNG, JPG, GIF, WEBP — 5 МБ дейін)",
-        validators=[FileAllowed(sorted(IMAGE_EXTENSIONS), "Тек сурет файлдары рұқсат етіледі.")],
+        _l("Фото (PNG, JPG, GIF, WEBP — 5 МБ дейін)"),
+        validators=[FileAllowed(sorted(IMAGE_EXTENSIONS), _l("Тек сурет файлдары рұқсат етіледі."))],
     )
-    submit = SubmitField("Сақтау")
+    submit = SubmitField(_l("Сақтау"))
 
     def __init__(self, *args, station=None, **kwargs):
         super().__init__(*args, **kwargs)
         self._station = station
         self.parameter_ids.choices = [
-            (p.id, f"{p.name} ({p.unit})") for p in Parameter.query.order_by(Parameter.name)
+            (p.id, f"{translate_data(p.name)} ({p.unit})") for p in Parameter.query.order_by(Parameter.name)
         ]
 
     def _ensure_unique(self, column, value, message):
@@ -146,27 +151,27 @@ class StationForm(FlaskForm):
             raise ValidationError(message)
 
     def validate_name(self, field):
-        self._ensure_unique(Station.name, field.data, "Бұл атаумен станция бұрыннан бар.")
+        self._ensure_unique(Station.name, field.data, _l("Бұл атаумен станция бұрыннан бар."))
 
     def validate_code(self, field):
-        self._ensure_unique(Station.code, field.data, "Бұл кодпен станция бұрыннан бар.")
+        self._ensure_unique(Station.code, field.data, _l("Бұл кодпен станция бұрыннан бар."))
 
 
 class ParameterForm(FlaskForm):
-    name = StringField("Атауы", validators=[DataRequired(REQUIRED), Length(2, 60)])
+    name = StringField(_l("Атауы"), validators=[DataRequired(REQUIRED), Length(2, 60, message=LENGTH_MSG)])
     code = StringField(
-        "Коды (латынша)",
+        _l("Коды (латынша)"),
         validators=[
             DataRequired(REQUIRED),
-            Length(2, 30),
-            Regexp(r"^[a-z][a-z0-9_]*$", message="Кіші латын әріптері, сандар және «_» (мыс. wind_speed)."),
+            Length(2, 30, message=LENGTH_MSG),
+            Regexp(r"^[a-z][a-z0-9_]*$", message=_l("Кіші латын әріптері, сандар және «_» (мыс. wind_speed).")),
         ],
     )
-    unit = StringField("Өлшем бірлігі", validators=[DataRequired(REQUIRED), Length(1, 20)])
-    min_value = DecimalCommaFloatField("Ең кіші рұқсат мән", validators=[InputRequired(REQUIRED)])
-    max_value = DecimalCommaFloatField("Ең үлкен рұқсат мән", validators=[InputRequired(REQUIRED)])
-    description = TextAreaField("Сипаттама", validators=[Optional(), Length(max=500)])
-    submit = SubmitField("Сақтау")
+    unit = StringField(_l("Өлшем бірлігі"), validators=[DataRequired(REQUIRED), Length(1, 20, message=LENGTH_MSG)])
+    min_value = DecimalCommaFloatField(_l("Ең кіші рұқсат мән"), validators=[InputRequired(REQUIRED)])
+    max_value = DecimalCommaFloatField(_l("Ең үлкен рұқсат мән"), validators=[InputRequired(REQUIRED)])
+    description = TextAreaField(_l("Сипаттама"), validators=[Optional(), Length(max=500, message=MAX_LENGTH_MSG)])
+    submit = SubmitField(_l("Сақтау"))
 
     def __init__(self, *args, parameter=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -180,38 +185,38 @@ class ParameterForm(FlaskForm):
             raise ValidationError(message)
 
     def validate_name(self, field):
-        self._ensure_unique(Parameter.name, field.data, "Бұл атаумен параметр бар.")
+        self._ensure_unique(Parameter.name, field.data, _l("Бұл атаумен параметр бар."))
 
     def validate_code(self, field):
-        self._ensure_unique(Parameter.code, field.data, "Бұл кодпен параметр бар.")
+        self._ensure_unique(Parameter.code, field.data, _l("Бұл кодпен параметр бар."))
 
     def validate_max_value(self, field):
         if self.min_value.data is not None and field.data is not None and field.data <= self.min_value.data:
-            raise ValidationError("Ең үлкен мән ең кіші мәннен үлкен болуы керек.")
+            raise ValidationError(_l("Ең үлкен мән ең кіші мәннен үлкен болуы керек."))
 
 
 class ObservationForm(FlaskForm):
-    station_id = SelectField("Станция", coerce=int, validators=[InputRequired(REQUIRED)])
-    parameter_id = SelectField("Параметр", coerce=int, validators=[InputRequired(REQUIRED)])
-    value = DecimalCommaFloatField("Мәні", validators=[InputRequired(REQUIRED)])
+    station_id = SelectField(_l("Станция"), coerce=int, validators=[InputRequired(REQUIRED)])
+    parameter_id = SelectField(_l("Параметр"), coerce=int, validators=[InputRequired(REQUIRED)])
+    value = DecimalCommaFloatField(_l("Мәні"), validators=[InputRequired(REQUIRED)])
     observed_at = DateTimeLocalField(
-        "Бақылау уақыты", format="%Y-%m-%dT%H:%M", validators=[InputRequired(REQUIRED)]
+        _l("Бақылау уақыты"), format="%Y-%m-%dT%H:%M", validators=[InputRequired(REQUIRED)]
     )
-    note = TextAreaField("Ескертпе", validators=[Optional(), Length(max=500, message="Ең көбі 500 таңба.")])
+    note = TextAreaField(_l("Ескертпе"), validators=[Optional(), Length(max=500, message=_l("Ең көбі 500 таңба."))])
     attachment_file = FileField(
-        "Тіркеме (PDF, PNG, JPG, CSV, TXT — 5 МБ дейін)",
-        validators=[FileAllowed(sorted(DOCUMENT_EXTENSIONS), "Бұл файл түріне рұқсат жоқ.")],
+        _l("Тіркеме (PDF, PNG, JPG, CSV, TXT — 5 МБ дейін)"),
+        validators=[FileAllowed(sorted(DOCUMENT_EXTENSIONS), _l("Бұл файл түріне рұқсат жоқ."))],
     )
-    submit = SubmitField("Сақтау")
+    submit = SubmitField(_l("Сақтау"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.station_id.choices = [
-            (s.id, s.name if s.is_active else f"{s.name} (белсенді емес)")
+            (s.id, translate_data(s.name) if s.is_active else _("{name} (белсенді емес)", name=translate_data(s.name)))
             for s in Station.query.order_by(Station.name)
         ]
         self.parameter_id.choices = [
-            (p.id, f"{p.name}, {p.unit}") for p in Parameter.query.order_by(Parameter.name)
+            (p.id, f"{translate_data(p.name)}, {p.unit}") for p in Parameter.query.order_by(Parameter.name)
         ]
 
     def validate(self, extra_validators=None):

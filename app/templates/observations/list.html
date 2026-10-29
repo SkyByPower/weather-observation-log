@@ -1,94 +1,94 @@
 {% extends "base.html" %}
 {% from "_macros.html" import pagination as paginate, obs_value, delete_button, param_icon %}
-{% block title %}Бақылаулар{% endblock %}
+{% block title %}{{ _("Бақылаулар") }}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <span class="eyebrow">📝 Журнал</span>
-    <h1>Бақылаулар журналы</h1>
-    <p class="muted">Іздеу, станция/параметр/күн бойынша сүзу және сорттау.</p>
+    <span class="eyebrow">📝 {{ _("Журнал") }}</span>
+    <h1>{{ _("Бақылаулар журналы") }}</h1>
+    <p class="muted">{{ _("Іздеу, станция/параметр/күн бойынша сүзу және сорттау.") }}</p>
   </div>
   {% if current_user.is_authenticated %}
-    <a class="btn btn-primary" href="{{ url_for('observations.create') }}">＋ Бақылау қосу</a>
+    <a class="btn btn-primary" href="{{ url_for('observations.create') }}">＋ {{ _("Бақылау қосу") }}</a>
   {% endif %}
 </div>
 
 <form class="card filters" method="get" style="margin-bottom:20px">
   <div class="field wide search-input">
-    <label for="q">Іздеу</label>
-    <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Станция, параметр немесе ескертпе…">
+    <label for="q">{{ _("Іздеу") }}</label>
+    <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="{{ _('Станция, параметр немесе ескертпе…') }}">
   </div>
   <div class="field">
-    <label for="station_id">Станция</label>
+    <label for="station_id">{{ _("Станция") }}</label>
     <select id="station_id" name="station_id">
-      <option value="">Барлығы</option>
-      {% for s in stations %}<option value="{{ s.id }}" {{ 'selected' if s.id == filters.station_id }}>{{ s.name }}</option>{% endfor %}
+      <option value="">{{ _("Барлығы") }}</option>
+      {% for s in stations %}<option value="{{ s.id }}" {{ 'selected' if s.id == filters.station_id }}>{{ s.name|tr }}</option>{% endfor %}
     </select>
   </div>
   <div class="field">
-    <label for="parameter_id">Параметр</label>
+    <label for="parameter_id">{{ _("Параметр") }}</label>
     <select id="parameter_id" name="parameter_id">
-      <option value="">Барлығы</option>
-      {% for p in parameters %}<option value="{{ p.id }}" {{ 'selected' if p.id == filters.parameter_id }}>{{ p.name }}</option>{% endfor %}
+      <option value="">{{ _("Барлығы") }}</option>
+      {% for p in parameters %}<option value="{{ p.id }}" {{ 'selected' if p.id == filters.parameter_id }}>{{ p.name|tr }}</option>{% endfor %}
     </select>
   </div>
   <div class="field">
-    <label for="date_from">Күннен</label>
+    <label for="date_from">{{ _("Күннен") }}</label>
     <input type="date" id="date_from" name="date_from" value="{{ filters.date_from or '' }}">
   </div>
   <div class="field">
-    <label for="date_to">Күнге дейін</label>
+    <label for="date_to">{{ _("Күнге дейін") }}</label>
     <input type="date" id="date_to" name="date_to" value="{{ filters.date_to or '' }}">
   </div>
   <div class="field">
-    <label for="sort">Сорттау</label>
+    <label for="sort">{{ _("Сорттау") }}</label>
     <select id="sort" name="sort">
-      {% for key, (_, label) in sorts.items() %}<option value="{{ key }}" {{ 'selected' if key == filters.sort }}>{{ label }}</option>{% endfor %}
+      {% for key, (_order, label) in sorts.items() %}<option value="{{ key }}" {{ 'selected' if key == filters.sort }}>{{ label }}</option>{% endfor %}
     </select>
   </div>
   {% if current_user.is_authenticated %}
   <div class="field">
-    <label class="check" style="margin-bottom:9px"><input type="checkbox" name="mine" value="1" {{ 'checked' if filters.mine }}> Тек менікі</label>
+    <label class="check" style="margin-bottom:9px"><input type="checkbox" name="mine" value="1" {{ 'checked' if filters.mine }}> {{ _("Тек менікі") }}</label>
   </div>
   {% endif %}
   <div class="btns">
-    <button class="btn btn-primary" type="submit">Қолдану</button>
-    <a class="btn btn-ghost" href="{{ url_for('observations.list_observations') }}">Тазалау</a>
+    <button class="btn btn-primary" type="submit">{{ _("Қолдану") }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('observations.list_observations') }}">{{ _("Тазалау") }}</a>
   </div>
 </form>
 
 <section class="card">
   {% if summary and summary.count %}
     <div class="summary-strip">
-      <span>{{ param_icon(summary.parameter.code) }} <b>{{ summary.parameter.name }}</b> — сүзілген {{ summary.count }} өлшем бойынша:</span>
-      <span>орташа <b>{{ summary.avg|num(2) }} {{ summary.parameter.unit }}</b></span>
-      <span>мин <b>{{ summary.min|num }}</b></span>
-      <span>макс <b>{{ summary.max|num }}</b></span>
+      <span>{{ param_icon(summary.parameter.code) }} <b>{{ summary.parameter.name|tr }}</b> — {{ _("сүзілген {count} өлшем бойынша:", count=summary.count) }}</span>
+      <span>{{ _("орташа") }} <b>{{ summary.avg|num(2) }} {{ summary.parameter.unit }}</b></span>
+      <span>{{ _("мин") }} <b>{{ summary.min|num }}</b></span>
+      <span>{{ _("макс") }} <b>{{ summary.max|num }}</b></span>
     </div>
   {% elif not filters.parameter_id %}
-    <p class="muted small">💡 Орташа мәнді көру үшін бір параметрді таңдаңыз.</p>
+    <p class="muted small">💡 {{ _("Орташа мәнді көру үшін бір параметрді таңдаңыз.") }}</p>
   {% endif %}
 
   {% if pagination.items %}
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Уақыты</th><th>Станция</th><th>Параметр</th><th class="num">Мәні</th><th>Ескертпе</th><th>Автор</th><th></th></tr>
+        <tr><th>{{ _("Уақыты") }}</th><th>{{ _("Станция") }}</th><th>{{ _("Параметр") }}</th><th class="num">{{ _("Мәні") }}</th><th>{{ _("Ескертпе") }}</th><th>{{ _("Автор") }}</th><th></th></tr>
       </thead>
       <tbody>
       {% for o in pagination.items %}
         <tr>
           <td class="nowrap"><a href="{{ url_for('observations.detail', observation_id=o.id) }}">{{ o.observed_at|dt }}</a></td>
-          <td><a href="{{ url_for('stations.detail', station_id=o.station_id) }}">{{ o.station.name }}</a></td>
-          <td><span class="cell-station">{{ param_icon(o.parameter.code) }} {{ o.parameter.name }}</span></td>
+          <td><a href="{{ url_for('stations.detail', station_id=o.station_id) }}">{{ o.station.name|tr }}</a></td>
+          <td><span class="cell-station">{{ param_icon(o.parameter.code) }} {{ o.parameter.name|tr }}</span></td>
           <td class="num nowrap">{{ obs_value(o) }}</td>
-          <td class="small">{{ o.note or '' }}{% if o.attachment %} 📎{% endif %}</td>
+          <td class="small">{{ (o.note or '')|tr }}{% if o.attachment %} 📎{% endif %}</td>
           <td class="small muted">{{ o.author.username if o.author else '—' }}</td>
           <td>
             {% if o.can_edit(current_user) %}
               <div class="actions">
-                <a href="{{ url_for('observations.edit', observation_id=o.id) }}">Өңдеу</a>
-                {{ delete_button(url_for('observations.delete', observation_id=o.id), 'Бұл бақылауды өшіресіз бе?') }}
+                <a href="{{ url_for('observations.edit', observation_id=o.id) }}">{{ _("Өңдеу") }}</a>
+                {{ delete_button(url_for('observations.delete', observation_id=o.id), _("Бұл бақылауды өшіресіз бе?")) }}
               </div>
             {% endif %}
           </td>
@@ -97,9 +97,9 @@
       </tbody>
     </table>
   </div>
-  {{ paginate(pagination, 'бақылау') }}
+  {{ paginate(pagination, _("бақылау")) }}
   {% else %}
-    <div class="empty">Сүзгіге сәйкес бақылау табылмады.</div>
+    <div class="empty">{{ _("Сүзгіге сәйкес бақылау табылмады.") }}</div>
   {% endif %}
 </section>
 {% endblock %}
