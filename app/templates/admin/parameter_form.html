@@ -3,7 +3,7 @@
 {% block title %}{{ 'Параметрді өңдеу' if parameter else 'Жаңа параметр' }}{% endblock %}
 {% block content %}
 <div class="card form-card">
-  <p class="small"><a href="{{ url_for('admin.parameters') }}">← Параметрлер</a></p>
+  <a class="back-link" href="{{ url_for('admin.parameters') }}">← Параметрлер</a>
   <h1>{{ 'Параметрді өңдеу' if parameter else 'Жаңа параметр' }}</h1>
   <form method="post" novalidate>
     {{ form.hidden_tag() }}

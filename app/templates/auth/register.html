@@ -1,18 +1,30 @@
 {% extends "base.html" %}
-{% from "_macros.html" import field %}
+{% from "_macros.html" import field, sky %}
 {% block title %}Тіркелу{% endblock %}
 {% block content %}
-<div class="card auth-card">
-  <h1>Тіркелу</h1>
-  <p class="muted">Жаңа аккаунт «user» рөлімен жасалады.</p>
-  <form method="post" novalidate>
-    {{ form.hidden_tag() }}
-    {{ field(form.username, autocomplete="username", help="3–30 таңба: латын әріптері, сандар, _ және .") }}
-    {{ field(form.email, type="email", autocomplete="email") }}
-    {{ field(form.password, autocomplete="new-password", help="Кемінде 6 таңба") }}
-    {{ field(form.confirm, autocomplete="new-password") }}
-    <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center">Тіркелу</button>
-  </form>
-  <p class="muted small" style="margin-top:16px">Аккаунтыңыз бар ма? <a href="{{ url_for('auth.login') }}">Кіру</a></p>
+<div class="auth-split">
+  <div class="auth-visual">
+    {{ sky(clouds=4) }}
+    <div class="inner">
+      <span class="eyebrow" style="color:rgba(255,255,255,.9)">⛅ Weather Log</span>
+      <h2>Бақылаушылар қауымына қосылыңыз</h2>
+      <p>Тіркелгеннен кейін бақылау қосып, файл тіркеп, API кілтін ала аласыз.</p>
+    </div>
+  </div>
+  <div class="auth-form">
+    <h1>Тіркелу</h1>
+    <p class="muted">Жаңа аккаунт «user» рөлімен жасалады.</p>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.username, autocomplete="username", placeholder="aigerim", help="3–30 таңба: латын әріптері, сандар, _ және .") }}
+      {{ field(form.email, type="email", autocomplete="email", placeholder="you@example.kz") }}
+      <div class="form-row">
+        {{ field(form.password, autocomplete="new-password", placeholder="кемінде 6 таңба") }}
+        {{ field(form.confirm, autocomplete="new-password", placeholder="қайталаңыз") }}
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Тіркелу →</button>
+    </form>
+    <p class="muted small" style="margin-top:16px">Аккаунтыңыз бар ма? <a href="{{ url_for('auth.login') }}">Кіру</a></p>
+  </div>
 </div>
 {% endblock %}

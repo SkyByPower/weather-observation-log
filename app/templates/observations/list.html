@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pagination as paginate, obs_value, delete_button %}
+{% from "_macros.html" import pagination as paginate, obs_value, delete_button, param_icon %}
 {% block title %}Бақылаулар{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
+    <span class="eyebrow">📝 Журнал</span>
     <h1>Бақылаулар журналы</h1>
     <p class="muted">Іздеу, станция/параметр/күн бойынша сүзу және сорттау.</p>
   </div>
@@ -13,7 +14,7 @@
 </div>
 
 <form class="card filters" method="get" style="margin-bottom:20px">
-  <div class="field wide">
+  <div class="field wide search-input">
     <label for="q">Іздеу</label>
     <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Станция, параметр немесе ескертпе…">
   </div>
@@ -59,7 +60,7 @@
 <section class="card">
   {% if summary and summary.count %}
     <div class="summary-strip">
-      <span>📊 <b>{{ summary.parameter.name }}</b> — сүзілген {{ summary.count }} өлшем бойынша:</span>
+      <span>{{ param_icon(summary.parameter.code) }} <b>{{ summary.parameter.name }}</b> — сүзілген {{ summary.count }} өлшем бойынша:</span>
       <span>орташа <b>{{ summary.avg|num(2) }} {{ summary.parameter.unit }}</b></span>
       <span>мин <b>{{ summary.min|num }}</b></span>
       <span>макс <b>{{ summary.max|num }}</b></span>
@@ -79,7 +80,7 @@
         <tr>
           <td class="nowrap"><a href="{{ url_for('observations.detail', observation_id=o.id) }}">{{ o.observed_at|dt }}</a></td>
           <td><a href="{{ url_for('stations.detail', station_id=o.station_id) }}">{{ o.station.name }}</a></td>
-          <td>{{ o.parameter.name }}</td>
+          <td><span class="cell-station">{{ param_icon(o.parameter.code) }} {{ o.parameter.name }}</span></td>
           <td class="num nowrap">{{ obs_value(o) }}</td>
           <td class="small">{{ o.note or '' }}{% if o.attachment %} 📎{% endif %}</td>
           <td class="small muted">{{ o.author.username if o.author else '—' }}</td>

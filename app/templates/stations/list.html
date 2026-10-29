@@ -1,19 +1,20 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pagination as paginate %}
+{% from "_macros.html" import pagination as paginate, wx %}
 {% block title %}Станциялар{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
+    <span class="eyebrow">📡 Желі</span>
     <h1>Метеостанциялар</h1>
-    <p class="muted">Бақылау жүргізілетін станциялар тізімі.</p>
+    <p class="muted">Әр станцияның соңғы өлшемі бойынша ауа райы көрсетілген.</p>
   </div>
   {% if current_user.is_authenticated and current_user.is_admin %}
     <a class="btn btn-primary" href="{{ url_for('stations.create') }}">＋ Жаңа станция</a>
   {% endif %}
 </div>
 
-<form class="card filters" method="get" style="margin-bottom:20px">
-  <div class="field wide">
+<form class="card filters" method="get" style="margin-bottom:24px">
+  <div class="field wide search-input">
     <label for="q">Іздеу</label>
     <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Атауы, коды немесе қала…">
   </div>
@@ -47,18 +48,24 @@
 {% if pagination.items %}
 <div class="grid grid-3">
   {% for s in pagination.items %}
+    {% set c = conditions.get(s.id) %}
+    {% set kind = c.kind if c else 'cloud' %}
     <article class="card station-card">
-      <div class="photo">
-        {% if s.photo %}<img src="{{ url_for('static', filename='uploads/' ~ s.photo) }}" alt="{{ s.name }}">{% else %}🌤{% endif %}
-      </div>
+      <a class="photo k-{{ kind }} {{ 'has-img' if s.photo }}" href="{{ url_for('stations.detail', station_id=s.id) }}">
+        {% if s.photo %}<img src="{{ url_for('static', filename='uploads/' ~ s.photo) }}" alt="{{ s.name }}">{% endif %}
+        {{ wx(kind, 92) }}
+        <span class="temp">
+          {% if c and c.temp is not none %}{{ '%+.0f'|format(c.temp) }}°{% else %}—{% endif %}
+          <small>{{ c.label if c else 'дерек жоқ' }}</small>
+        </span>
+        <span class="shine"></span>
+      </a>
       <div class="body">
         <h3 style="margin:0"><a href="{{ url_for('stations.detail', station_id=s.id) }}">{{ s.name }}</a></h3>
-        <div class="meta">📍 {{ s.city }} · <span class="mono">{{ s.code }}</span></div>
-        <div class="meta">{{ '%.3f'|format(s.latitude) }}°, {{ '%.3f'|format(s.longitude) }}°
-          {% if s.elevation is not none %}· {{ s.elevation|num(0) }} м{% endif %}</div>
+        <div class="meta">📍 {{ s.city }} · <span class="mono">{{ s.code }}</span>{% if s.elevation is not none %} · ⛰ {{ s.elevation|num(0) }} м{% endif %}</div>
         <div class="foot">
           {% if s.is_active %}<span class="badge ok">Белсенді</span>{% else %}<span class="badge off">Белсенді емес</span>{% endif %}
-          <span class="muted small">{{ counts.get(s.id, 0) }} бақылау</span>
+          <span class="muted small">📝 {{ counts.get(s.id, 0) }} бақылау</span>
         </div>
       </div>
     </article>

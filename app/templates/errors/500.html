@@ -1,13 +1,16 @@
 {% extends "base.html" %}
+{% from "_macros.html" import sky %}
 {% block title %}500 — Сервер қатесі{% endblock %}
 {% block content %}
-<div class="error-page">
-  <div class="icon">⛈️</div>
-  <div class="code">500</div>
-  <h1>Сервердің ішкі қатесі</h1>
-  <p class="muted">Серверде күтпеген дауыл болды. Біз оны жақын арада түзетеміз — бірнеше минуттан кейін қайталап көріңіз.</p>
-  <div class="hero-actions" style="justify-content:center;margin-top:18px">
-    <a class="btn btn-primary" href="{{ url_for('main.index') }}">Басты бетке</a>
+<div class="error-scene">
+  {{ sky('storm', clouds=5) }}
+  <div class="inner">
+    <div class="code">500</div>
+    <h1>Серверде дауыл басталды</h1>
+    <p>Сервердің ішкі қатесі орын алды. Біз оны жақын арада түзетеміз — бірнеше минуттан кейін қайталап көріңіз.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('main.index') }}">🏠 Басты бетке</a>
+    </div>
   </div>
 </div>
 {% endblock %}

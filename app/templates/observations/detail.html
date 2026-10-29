@@ -3,7 +3,7 @@
 {% block title %}Бақылау #{{ obs.id }}{% endblock %}
 {% block content %}
 <div class="card form-card">
-  <p class="small"><a href="{{ url_for('observations.list_observations') }}">← Бақылаулар</a></p>
+  <a class="back-link" href="{{ url_for('observations.list_observations') }}">← Бақылаулар</a>
   <div class="card-title">
     <h1 style="margin:0">Бақылау #{{ obs.id }}</h1>
     {% if obs.can_edit(current_user) %}

@@ -6,7 +6,7 @@ from sqlalchemy import func, or_
 from .. import db
 from ..forms import StationForm
 from ..models import Observation, Parameter, Station
-from ..services import parameter_averages
+from ..services import latest_conditions, parameter_averages
 from ..utils import IMAGE_EXTENSIONS, admin_required, delete_upload, has_file, save_upload
 from . import bp
 
@@ -49,6 +49,7 @@ def list_stations():
         pagination=pagination,
         counts=counts,
         cities=cities,
+        conditions=latest_conditions(),
         sorts=SORTS,
         filters={"q": q, "city": city, "status": status, "sort": sort},
     )
@@ -65,6 +66,7 @@ def detail(station_id):
         station=station,
         latest=latest,
         averages=averages,
+        condition=latest_conditions().get(station.id),
         total=station.observations.count(),
     )
 

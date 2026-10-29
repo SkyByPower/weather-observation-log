@@ -4,13 +4,14 @@
 {% block content %}
 <div class="page-head">
   <div>
+    <span class="eyebrow">🛡️ Әкімші</span>
     <h1>Пайдаланушылар</h1>
     <p class="muted">Рөлдерді басқару (admin / user) және аккаунттарды өшіру.</p>
   </div>
 </div>
 
 <form class="card filters" method="get" style="margin-bottom:20px">
-  <div class="field wide">
+  <div class="field wide search-input">
     <label for="q">Іздеу</label>
     <input type="search" id="q" name="q" value="{{ filters.q }}" placeholder="Аты немесе email…">
   </div>
@@ -33,7 +34,7 @@
     <tbody>
     {% for u in pagination.items %}
       <tr>
-        <td><b>{{ u.username }}</b>{% if u.id == current_user.id %} <span class="muted small">(сіз)</span>{% endif %}</td>
+        <td><span class="cell-station"><span class="avatar">{{ u.username[:1] }}</span><b>{{ u.username }}</b></span>{% if u.id == current_user.id %} <span class="muted small">(сіз)</span>{% endif %}</td>
         <td>{{ u.email }}</td>
         <td class="nowrap">{{ u.created_at|dt('%d.%m.%Y') }}</td>
         <td class="num">{{ counts.get(u.id, 0) }}</td>

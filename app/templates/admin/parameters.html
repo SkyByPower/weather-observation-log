@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% from "_macros.html" import delete_button %}
+{% from "_macros.html" import delete_button, param_icon %}
 {% block title %}Параметрлер{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
+    <span class="eyebrow">🛡️ Әкімші</span>
     <h1>Өлшенетін параметрлер</h1>
     <p class="muted">Әр параметрдің өлшем бірлігі және рұқсат етілген мән диапазоны (форма валидациясында қолданылады).</p>
   </div>
@@ -16,7 +17,7 @@
     <tbody>
     {% for p in parameters %}
       <tr>
-        <td><b>{{ p.name }}</b></td>
+        <td><span class="cell-station">{{ param_icon(p.code) }}<b>{{ p.name }}</b></span></td>
         <td class="mono">{{ p.code }}</td>
         <td>{{ p.unit }}</td>
         <td class="num nowrap">{{ '%g'|format(p.min_value) }} … {{ '%g'|format(p.max_value) }}</td>

@@ -3,10 +3,8 @@
 {% block title %}{{ 'Бақылауды өңдеу' if obs else 'Жаңа бақылау' }}{% endblock %}
 {% block content %}
 <div class="card form-card">
-  <p class="small">
-    {% if obs %}<a href="{{ url_for('observations.detail', observation_id=obs.id) }}">← Бақылау #{{ obs.id }}</a>
-    {% else %}<a href="{{ url_for('observations.list_observations') }}">← Бақылаулар</a>{% endif %}
-  </p>
+  {% if obs %}<a class="back-link" href="{{ url_for('observations.detail', observation_id=obs.id) }}">← Бақылау #{{ obs.id }}</a>
+    {% else %}<a class="back-link" href="{{ url_for('observations.list_observations') }}">← Бақылаулар</a>{% endif %}
   <h1>{{ 'Бақылауды өңдеу' if obs else 'Жаңа бақылау' }}</h1>
   <form method="post" enctype="multipart/form-data" novalidate>
     {{ form.hidden_tag() }}

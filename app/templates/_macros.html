@@ -14,15 +14,15 @@
 {% macro pagination(p, noun='жазба') %}
   {% if p.pages > 1 %}
     <nav class="pagination" aria-label="Беттеу">
-      {% if p.has_prev %}<a href="{{ url_with_args(page=p.prev_num) }}">‹ Алдыңғы</a>
-      {% else %}<span class="disabled">‹ Алдыңғы</span>{% endif %}
+      {% if p.has_prev %}<a href="{{ url_with_args(page=p.prev_num) }}">‹</a>
+      {% else %}<span class="disabled">‹</span>{% endif %}
       {% for n in p.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
         {% if n is none %}<span class="gap">…</span>
         {% elif n == p.page %}<span class="current">{{ n }}</span>
         {% else %}<a href="{{ url_with_args(page=n) }}">{{ n }}</a>{% endif %}
       {% endfor %}
-      {% if p.has_next %}<a href="{{ url_with_args(page=p.next_num) }}">Келесі ›</a>
-      {% else %}<span class="disabled">Келесі ›</span>{% endif %}
+      {% if p.has_next %}<a href="{{ url_with_args(page=p.next_num) }}">›</a>
+      {% else %}<span class="disabled">›</span>{% endif %}
     </nav>
   {% endif %}
   {% if p.total %}
@@ -38,3 +38,50 @@
 {% endmacro %}
 
 {% macro obs_value(o) %}<b>{{ o.value|num }}</b> <span class="muted">{{ o.parameter.unit }}</span>{% endmacro %}
+
+{# Анимацияланған ауа райы иконкасы: sun, night, partly, cloud, rain, snow, storm, wind #}
+{% macro wx(kind, size=64) %}
+  <span class="wx wx--{{ kind }}" style="--s:{{ size }}px" aria-hidden="true">
+    {%- if kind in ('sun', 'partly') %}<span class="wx-sun"></span>{% endif -%}
+    {%- if kind == 'night' %}<span class="wx-stars"><i></i><i></i><i></i></span><span class="wx-moon"></span>{% endif -%}
+    {%- if kind == 'cloud' %}<span class="wx-cloud wx-cloud-back"></span>{% endif -%}
+    {%- if kind in ('rain', 'storm') %}<span class="wx-drops"><i></i><i></i><i></i><i></i></span>{% endif -%}
+    {%- if kind == 'snow' %}<span class="wx-flakes"><i></i><i></i><i></i><i></i></span>{% endif -%}
+    {%- if kind in ('partly', 'cloud', 'rain', 'snow', 'storm', 'wind') %}<span class="wx-cloud"></span>{% endif -%}
+    {%- if kind == 'storm' %}<span class="wx-bolt"></span>{% endif -%}
+    {%- if kind == 'wind' %}<span class="wx-gusts"><i></i><i></i><i></i></span>{% endif -%}
+  </span>
+{% endmacro %}
+
+{% macro param_icon(code) -%}
+  <span class="p-icon p-{{ code }}">{{ {'temperature': '🌡️', 'humidity': '💧', 'pressure': '🧭', 'wind_speed': '🌬️', 'precipitation': '🌧️'}.get(code, '📈') }}</span>
+{%- endmacro %}
+
+{# Анимацияланған аспан: mode = auto (күн/түн) | storm | fog #}
+{% macro sky(mode='auto', clouds=4) %}
+  <div class="sky {{ 'sky--' ~ mode if mode != 'auto' }}" data-sky aria-hidden="true">
+    <div class="sky-stars"></div><div class="sky-stars s2"></div>
+    <div class="sky-sun"></div>
+    <div class="sky-moon"></div>
+    {% set layers = [
+      ('14%', '78s', '-10s', '230px', '.95'),
+      ('34%', '58s', '-38s', '150px', '.85'),
+      ('8%', '95s', '-62s', '120px', '.7'),
+      ('48%', '70s', '-22s', '190px', '.9'),
+      ('26%', '110s', '-80s', '260px', '.6'),
+    ] %}
+    {% for y, t, d, w, o in layers[:clouds] %}
+      <div class="drift" style="--y:{{ y }};--t:{{ t }};--d:{{ d }}">
+        <div class="cloud" style="--w:{{ w }};--o:{{ o }}">
+          {% if loop.index == 2 or mode == 'storm' %}<div class="rain"><i></i><i></i><i></i><i></i><i></i><i></i></div>{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    {% if mode == 'storm' %}<div class="downpour"></div><div class="bolt"></div><div class="lightning"></div>{% endif %}
+    {% if mode == 'fog' %}<div class="fog f1"></div><div class="fog f2"></div><div class="fog f3"></div>{% endif %}
+    <svg class="sky-hills" viewBox="0 0 1200 120" preserveAspectRatio="none">
+      <path class="h1" d="M0 70 C 180 20, 380 105, 600 55 S 1000 20, 1200 65 V120 H0Z"/>
+      <path class="h2" d="M0 98 C 260 55, 460 120, 720 82 S 1060 66, 1200 92 V120 H0Z"/>
+    </svg>
+  </div>
+{% endmacro %}

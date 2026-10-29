@@ -1,17 +1,20 @@
 {% extends "base.html" %}
+{% from "_macros.html" import sky %}
 {% block title %}{{ code }} — {{ message }}{% endblock %}
 {% block content %}
-<div class="error-page">
-  <div class="icon">{{ '🔒' if code == 403 else '⚠️' }}</div>
-  <div class="code">{{ code }}</div>
-  <h1>{{ message }}</h1>
-  <p class="muted">
-    {% if code == 403 %}Бұл әрекетке тек әкімші (admin) немесе жазба авторы рұқсат ала алады.
-    {% elif code == 413 %}Жүктелетін файл {{ (config.MAX_CONTENT_LENGTH / 1024 / 1024)|round|int }} МБ-тан аспауы керек.
-    {% else %}Сұранысты өңдеу мүмкін болмады. Бетті жаңартып, қайталап көріңіз.{% endif %}
-  </p>
-  <div class="hero-actions" style="justify-content:center;margin-top:18px">
-    <a class="btn btn-primary" href="{{ url_for('main.index') }}">Басты бетке</a>
+<div class="error-scene">
+  {{ sky('storm' if code == 403 else 'fog', clouds=3) }}
+  <div class="inner">
+    <div class="code">{{ code }}</div>
+    <h1>{{ '🔒 ' if code == 403 }}{{ message }}</h1>
+    <p>
+      {% if code == 403 %}Бұл әрекетке тек әкімші (admin) немесе жазба авторы рұқсат ала алады.
+      {% elif code == 413 %}Жүктелетін файл {{ (config.MAX_CONTENT_LENGTH / 1024 / 1024)|round|int }} МБ-тан аспауы керек.
+      {% else %}Сұранысты өңдеу мүмкін болмады. Бетті жаңартып, қайталап көріңіз.{% endif %}
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('main.index') }}">🏠 Басты бетке</a>
+    </div>
   </div>
 </div>
 {% endblock %}

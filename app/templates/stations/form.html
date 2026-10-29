@@ -3,10 +3,8 @@
 {% block title %}{{ 'Станцияны өңдеу' if station else 'Жаңа станция' }}{% endblock %}
 {% block content %}
 <div class="card form-card">
-  <p class="small">
-    {% if station %}<a href="{{ url_for('stations.detail', station_id=station.id) }}">← {{ station.name }}</a>
-    {% else %}<a href="{{ url_for('stations.list_stations') }}">← Станциялар</a>{% endif %}
-  </p>
+  {% if station %}<a class="back-link" href="{{ url_for('stations.detail', station_id=station.id) }}">← {{ station.name }}</a>
+    {% else %}<a class="back-link" href="{{ url_for('stations.list_stations') }}">← Станциялар</a>{% endif %}
   <h1>{{ 'Станцияны өңдеу' if station else 'Жаңа станция' }}</h1>
   <form method="post" enctype="multipart/form-data" novalidate>
     {{ form.hidden_tag() }}

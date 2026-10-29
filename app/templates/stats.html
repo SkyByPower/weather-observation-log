@@ -1,8 +1,10 @@
 {% extends "base.html" %}
+{% from "_macros.html" import param_icon %}
 {% block title %}Орташа мәндер{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
+    <span class="eyebrow">📈 Аналитика</span>
     <h1>Орташа мәндер</h1>
     <p class="muted">Күн аралығы мен станцияны таңдап, параметрлердің орташа, ең кіші және ең үлкен мәндерін есептеңіз.</p>
   </div>
@@ -43,10 +45,10 @@
 </p>
 
 {% if summary %}
-<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:20px">
+<div class="grid grid-auto" style="margin-bottom:22px">
   {% for a in summary %}
-    <a class="tile avg-tile" href="{{ url_with_args(parameter_id=a.id) }}" style="text-decoration:none;color:inherit;{{ 'outline:2px solid var(--primary)' if parameter and a.id == parameter.id }}">
-      <div class="tile-label">{{ a.name }}</div>
+    <a class="tile avg-tile p-{{ a.code }} {{ 'is-selected' if parameter and a.id == parameter.id }}" style="background: var(--surface)" href="{{ url_with_args(parameter_id=a.id) }}">
+      <div class="tile-head"><span class="tile-label">{{ a.name }}</span>{{ param_icon(a.code) }}</div>
       <div class="tile-value">{{ a.avg|num }} <span class="unit">{{ a.unit }}</span></div>
       <div class="tile-sub">мин {{ a.min|num }} · макс {{ a.max|num }} · {{ a.count }} өлшем</div>
     </a>
@@ -59,14 +61,22 @@
     <h2>{{ parameter.name if parameter else '' }} — күндік орташа мән{% if parameter %} <span class="muted small">({{ parameter.unit }})</span>{% endif %}</h2>
     {% if chart %}
       <svg class="chart" viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-label="Күндік орташа мәндер графигі">
+        <defs>
+          <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#2f6bff"/><stop offset=".55" stop-color="#00b4d8"/><stop offset="1" stop-color="#ff9f1c"/>
+          </linearGradient>
+          <linearGradient id="areaGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#2f6bff" stop-opacity=".28"/><stop offset="1" stop-color="#00b4d8" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
         {% for t in chart.ticks %}
           <line class="grid-line" x1="{{ chart.pad_x }}" x2="{{ chart.width - chart.pad_x }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
           <text class="axis-label" x="{{ chart.pad_x - 8 }}" y="{{ t.y + 4 }}" text-anchor="end">{{ t.value|num }}</text>
         {% endfor %}
         <polygon class="area" points="{{ chart.area }}"/>
-        <polyline class="line" points="{{ chart.polyline }}"/>
+        <polyline class="line" pathLength="1" points="{{ chart.polyline }}"/>
         {% for p in chart.points %}
-          <circle class="dot" cx="{{ p.x }}" cy="{{ p.y }}" r="4"><title>{{ p.date.strftime('%d.%m.%Y') }}: {{ p.avg|num(2) }} (мин {{ p.min|num }}, макс {{ p.max|num }})</title></circle>
+          <circle class="dot" cx="{{ p.x }}" cy="{{ p.y }}" r="4.5" style="animation-delay: {{ 400 + loop.index0 * 90 }}ms"><title>{{ p.date.strftime('%d.%m.%Y') }}: {{ p.avg|num(2) }} (мин {{ p.min|num }}, макс {{ p.max|num }})</title></circle>
           {% if loop.index0 % chart.label_every == 0 or loop.last %}
             <text class="axis-label" x="{{ p.x }}" y="{{ chart.height - 8 }}" text-anchor="middle">{{ p.date.strftime('%d.%m') }}</text>
           {% endif %}
@@ -95,7 +105,7 @@
   </section>
 
   <section class="card">
-    <h2>Станциялар салыстыруы</h2>
+    <h2>🏁 Станциялар салыстыруы</h2>
     <p class="muted small">{{ parameter.name if parameter else '' }} — кезеңдегі орташа мән</p>
     {% if by_station %}
       {% set values = by_station|map(attribute='avg')|list %}
@@ -103,7 +113,7 @@
       {% for row in by_station %}
         <div class="bar-row">
           <a href="{{ url_with_args(station_id=row.id) }}" title="{{ row.name }}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.name }}</a>
-          <div class="bar"><span style="width: {{ (6 + 94 * (row.avg - lo) / span)|round(1) }}%"></span></div>
+          <div class="bar"><span style="width: {{ (6 + 94 * (row.avg - lo) / span)|round(1) }}%; animation-delay: {{ loop.index0 * 90 }}ms"></span></div>
           <span class="right"><b>{{ row.avg|num }}</b></span>
         </div>
       {% endfor %}

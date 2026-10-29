@@ -4,7 +4,14 @@ from flask import flash, render_template, request
 
 from .. import db
 from ..models import Observation, Parameter, Station, User
-from ..services import build_line_chart, daily_averages, parameter_averages, parse_date, station_averages
+from ..services import (
+    build_line_chart,
+    daily_averages,
+    latest_conditions,
+    parameter_averages,
+    parse_date,
+    station_averages,
+)
 from . import bp
 
 
@@ -19,9 +26,17 @@ def index():
     today = date.today()
     latest = Observation.query.order_by(Observation.observed_at.desc()).limit(8).all()
     week_averages = parameter_averages(date_from=today - timedelta(days=6), date_to=today)
-    stations = Station.query.filter_by(is_active=True).order_by(Station.name).limit(6).all()
+    stations = Station.query.filter_by(is_active=True).order_by(Station.name).all()
+    conditions = latest_conditions()
+    now_stations = [(s, conditions[s.id]) for s in stations if s.id in conditions][:4]
     return render_template(
-        "index.html", counts=counts, latest=latest, week_averages=week_averages, stations=stations
+        "index.html",
+        counts=counts,
+        latest=latest,
+        week_averages=week_averages,
+        stations=stations[:6],
+        conditions=conditions,
+        now_stations=now_stations,
     )
 
 

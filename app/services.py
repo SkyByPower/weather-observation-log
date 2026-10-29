@@ -1,7 +1,7 @@
 """Бақылау деректерін тексеру, күн бойынша сүзу және орташа мәндерді есептеу."""
 from datetime import date, datetime, time, timedelta
 
-from sqlalchemy import func
+from sqlalchemy import and_, func
 
 from . import db
 from .models import Observation, Parameter, Station
@@ -134,3 +134,60 @@ def build_line_chart(daily, width=760, height=260, pad_x=48, pad_y=28):
         "ticks": ticks,
         "label_every": label_every,
     }
+
+
+WEATHER_LABELS = {
+    "sun": "Ашық",
+    "night": "Ашық түн",
+    "partly": "Аздап бұлтты",
+    "cloud": "Бұлтты",
+    "rain": "Жаңбыр",
+    "snow": "Қар",
+    "storm": "Нөсер",
+    "wind": "Желді",
+}
+
+
+def weather_kind(values, observed_at=None):
+    """Соңғы өлшемдерден ауа райы түрін (иконка үшін) анықтайды."""
+    temp = values.get("temperature")
+    precip = values.get("precipitation") or 0
+    wind = values.get("wind_speed") or 0
+    humidity = values.get("humidity")
+    if precip > 0:
+        if temp is not None and temp <= 0.5:
+            return "snow"
+        return "storm" if precip >= 5 else "rain"
+    if wind >= 9:
+        return "wind"
+    if humidity is not None and humidity >= 85:
+        return "cloud"
+    if humidity is not None and humidity >= 70:
+        return "partly"
+    if observed_at is not None and (observed_at.hour < 6 or observed_at.hour >= 20):
+        return "night"
+    return "sun"
+
+
+def latest_conditions():
+    """Әр станцияның ең соңғы өлшеу уақытындағы мәндері және ауа райы түрі."""
+    latest = (
+        db.session.query(Observation.station_id, func.max(Observation.observed_at).label("ts"))
+        .group_by(Observation.station_id)
+        .subquery()
+    )
+    rows = (
+        db.session.query(Observation.station_id, Parameter.code, Observation.value, Observation.observed_at)
+        .join(Parameter, Parameter.id == Observation.parameter_id)
+        .join(latest, and_(Observation.station_id == latest.c.station_id, Observation.observed_at == latest.c.ts))
+        .all()
+    )
+    conditions = {}
+    for station_id, code, value, observed_at in rows:
+        item = conditions.setdefault(station_id, {"values": {}, "observed_at": observed_at})
+        item["values"][code] = value
+    for item in conditions.values():
+        item["kind"] = weather_kind(item["values"], item["observed_at"])
+        item["label"] = WEATHER_LABELS[item["kind"]]
+        item["temp"] = item["values"].get("temperature")
+    return conditions
