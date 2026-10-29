@@ -565,6 +565,9 @@ input[type=search], input[type=tel], select, textarea {
   width: 100%; padding: 11px 14px; border: 1px solid var(--border-strong); border-radius: 12px; font: inherit; font-size: .94rem;
   background: var(--input-bg); color: var(--text); transition: border-color .2s, box-shadow .2s, background .2s;
 }
+/* Ашылмалы тізім пункттері: браузер оларды өз фонымен салады, сондықтан түсті нақты береміз */
+select option, select optgroup { background-color: var(--surface-solid); color: var(--text); }
+select option:checked { background-color: var(--primary); color: #fff; }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: .75; }
 input:hover, select:hover, textarea:hover { border-color: var(--primary); }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
