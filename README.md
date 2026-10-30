@@ -76,7 +76,7 @@
 
 ### 1. Репозиторийді жүктеу
 ```bash
-git clone https://github.com/<username>/weather-observation-log.git
+git clone https://github.com/SkyByPower/weather-observation-log.git
 cd weather-observation-log
 ```
 
